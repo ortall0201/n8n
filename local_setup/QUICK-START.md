@@ -5,6 +5,29 @@
 
 ---
 
+## ⚡ Super Quick Reference
+
+**First time setup (2 commands):**
+```bash
+# 1. Create storage (one-time)
+docker volume create n8n_data
+
+# 2. Start n8n (background mode with Israel timezone)
+docker run -d --name n8n --restart unless-stopped -p 5678:5678 -e GENERIC_TIMEZONE="Asia/Jerusalem" -e TZ="Asia/Jerusalem" -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+```
+
+**Access:** http://localhost:5678
+
+**Common commands:**
+```bash
+docker ps              # Check if running
+docker stop n8n        # Stop n8n
+docker start n8n       # Start n8n again
+docker logs n8n        # View logs
+```
+
+---
+
 ## Prerequisites
 
 Make sure Docker Desktop is installed and running:
@@ -29,23 +52,54 @@ docker volume create n8n_data
 
 ### Step 2: Run n8n
 
+**Choose ONE of these options:**
+
+#### Option A: Background Mode (Recommended - Auto-starts with Docker)
+
 ```bash
-docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+docker run -d --name n8n --restart unless-stopped -p 5678:5678 -e GENERIC_TIMEZONE="Asia/Jerusalem" -e TZ="Asia/Jerusalem" -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
 ```
 
-**What this does:**
-- Downloads official n8n image (first time only)
-- Starts n8n on port 5678
-- Connects to the persistent volume
-- Shows logs in real-time
+**Benefits:**
+- ✅ Runs in background (don't need to keep Command Prompt open)
+- ✅ Auto-starts when Docker Desktop starts
+- ✅ Israel timezone configured (change to your timezone)
+- ✅ Professional setup
+
+**Common timezones:**
+- Israel: `Asia/Jerusalem`
+- USA (East): `America/New_York`
+- USA (West): `America/Los_Angeles`
+- UK: `Europe/London`
+- Germany: `Europe/Berlin`
+
+---
+
+#### Option B: Interactive Mode (See Logs)
+
+```bash
+docker run -it --rm --name n8n -p 5678:5678 -e GENERIC_TIMEZONE="Asia/Jerusalem" -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+```
+
+**Benefits:**
+- ✅ See logs in real-time
+- ✅ Good for troubleshooting
+- ⚠️ Must keep Command Prompt open
+
+---
 
 **First time:** Docker will download n8n (~500MB, takes 2-5 minutes)
 
-**When you see:**
+**When you see (in Option B):**
 ```
 n8n ready on 0.0.0.0, port 5678
 Editor is now accessible via:
 http://localhost:5678/
+```
+
+**For Option A (background):** Check if running:
+```bash
+docker ps
 ```
 
 ✅ **n8n is running!**
@@ -74,8 +128,13 @@ Create your account (email, name, password) and start building workflows!
 
 ## Stop n8n
 
-In the Command Prompt where n8n is running:
-- Press **`Ctrl + C`**
+**If using Option A (background mode):**
+```bash
+docker stop n8n
+```
+
+**If using Option B (interactive mode):**
+- Press **`Ctrl + C`** in the Command Prompt
 
 Your data is saved in the `n8n_data` volume and will persist!
 
@@ -83,10 +142,19 @@ Your data is saved in the `n8n_data` volume and will persist!
 
 ## Start n8n Again
 
-Just run the same command:
-
+**If you used Option A (background mode):**
 ```bash
-docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+docker start n8n
+```
+
+**If you need to recreate (after `docker rm n8n`):**
+```bash
+docker run -d --name n8n --restart unless-stopped -p 5678:5678 -e GENERIC_TIMEZONE="Asia/Jerusalem" -e TZ="Asia/Jerusalem" -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+```
+
+**If you used Option B (interactive mode):**
+```bash
+docker run -it --rm --name n8n -p 5678:5678 -e GENERIC_TIMEZONE="Asia/Jerusalem" -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
 ```
 
 All your workflows and credentials will be there!
