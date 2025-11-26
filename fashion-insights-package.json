@@ -1,0 +1,43 @@
+{
+  "name": "fashion-insights",
+  "version": "2.0.0",
+  "description": "AI-powered fashion trend analysis - 100% n8n-native automation",
+  "author": "Ortal <ortal@onsight-analytics.com>",
+  "license": "MIT",
+  "scripts": {
+    "figma:sync": "node mcp/figma-sync.js",
+    "figma:sync:landing": "node mcp/figma-sync.js --page 'Landing'",
+    "figma:sync:about": "node mcp/figma-sync.js --page 'About'",
+    "figma:sync:dry-run": "node mcp/figma-sync.js --dry-run",
+    "figma:help": "node mcp/figma-sync.js --help",
+    "mcp:install": "npm install @modelcontextprotocol/server-figma dotenv",
+    "n8n:start": "docker run -it --rm --name n8n -p 5678:5678 -v ~/.n8n:/home/node/.n8n docker.n8n.io/n8nio/n8n",
+    "n8n:start:npx": "npx n8n",
+    "test:webhook:signup": "curl -X POST http://localhost:5678/webhook/newsletter-signup -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"name\":\"Test User\"}'",
+    "test:webhook:latest": "curl http://localhost:5678/webhook/latest-issue"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server-figma": "^0.3.0",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fashion",
+    "trends",
+    "ai",
+    "newsletter",
+    "n8n",
+    "automation",
+    "mcp",
+    "figma"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/fashion-insights"
+  }
+}

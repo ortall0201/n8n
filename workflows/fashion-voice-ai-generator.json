@@ -1,0 +1,144 @@
+{
+  "name": "Fashion Insights Voice AI Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-voice",
+      "name": "Generate Voice Summary",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "sheetName": {
+          "__rl": true,
+          "value": "Insights",
+          "mode": "list"
+        },
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "get-latest-insights",
+      "name": "Get Latest Fashion Insights",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [460, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// CREATE VOICE SCRIPT FROM INSIGHTS\nconst insights = $input.first().json;\n\n// Create engaging voice script\nconst script = `\nHey fashion lovers! Welcome to this week's Fashion Insights, your AI-powered guide to the latest trends!\n\nLet's dive into what's hot right now.\n\nThis week's analysis shows a ${insights.sentiment || 'positive'} sentiment in the fashion world. We analyzed ${insights.posts_analyzed || 50} posts from top influencers.\n\nHere are the top 5 trends taking over Instagram:\n\nNumber one: ${insights.top_trends?.[0] || 'Oversized blazers'}. This trend is everywhere right now!\n\nNumber two: ${insights.top_trends?.[1] || 'Cargo pants revival'}. Yes, they're back!\n\nNumber three: ${insights.top_trends?.[2] || 'Sustainable fashion'}. Conscious fashion is the future.\n\nNumber four: ${insights.top_trends?.[3] || 'Chunky sneakers'}. Comfort meets style.\n\nAnd number five: ${insights.top_trends?.[4] || 'Neutral palettes'}. Beige and cream are dominating.\n\nWhen it comes to colors, we're seeing a lot of ${insights.popular_colors?.join(', ') || 'beige, cream, and burgundy'}.\n\nThe key brands mentioned this week are ${insights.key_brands?.join(', ') || 'Zara and H&M'}.\n\nAnd if you're into hashtags, keep an eye on ${insights.rising_hashtags?.join(', ') || '#ootd and #fashion'}.\n\nHere's my recommendation for you: ${insights.recommendations?.[0] || 'Focus on sustainable fashion marketing'}.\n\nThat's all for this week's Fashion Insights! Don't forget to check out the full newsletter for influencer product picks and exclusive links.\n\nStay stylish, and see you next week!\n`;\n\nreturn [{\n  json: {\n    script: script.trim(),\n    word_count: script.split(' ').length,\n    estimated_duration_seconds: Math.ceil(script.split(' ').length / 2.5) // ~150 words per minute\n  }\n}];"
+      },
+      "id": "create-script",
+      "name": "Create Voice Script",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/VOICE_ID",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "YOUR_ELEVENLABS_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.script }}\",\n  \"model_id\": \"eleven_monolingual_v1\",\n  \"voice_settings\": {\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.75\n  }\n}",
+        "options": {}
+      },
+      "id": "elevenlabs-tts",
+      "name": "ElevenLabs Text-to-Speech",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=fashion-insights-voice-{{ new Date().toISOString().split('T')[0] }}.mp3",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "save-audio",
+      "name": "Save Audio File",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "audio-url",
+              "name": "audio_url",
+              "value": "=http://localhost:5678/files/fashion-insights-voice-{{ new Date().toISOString().split('T')[0] }}.mp3",
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "name": "duration_seconds",
+              "value": "={{ $('Create Voice Script').first().json.estimated_duration_seconds }}",
+              "type": "number"
+            },
+            {
+              "id": "success-msg",
+              "name": "message",
+              "value": "Voice AI generated successfully!",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "output-result",
+      "name": "Output Audio URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Generate Voice Summary": {
+      "main": [[{"node": "Get Latest Fashion Insights", "type": "main", "index": 0}]]
+    },
+    "Get Latest Fashion Insights": {
+      "main": [[{"node": "Create Voice Script", "type": "main", "index": 0}]]
+    },
+    "Create Voice Script": {
+      "main": [[{"node": "ElevenLabs Text-to-Speech", "type": "main", "index": 0}]]
+    },
+    "ElevenLabs Text-to-Speech": {
+      "main": [[{"node": "Save Audio File", "type": "main", "index": 0}]]
+    },
+    "Save Audio File": {
+      "main": [[{"node": "Output Audio URL", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-26T00:00:00.000Z",
+  "versionId": "fashion-voice-ai-v1"
+}

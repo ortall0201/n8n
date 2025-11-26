@@ -1,0 +1,182 @@
+{
+  "name": "Instagram Fashion Insights - Mock Version",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-fashion",
+      "name": "Start Scraper",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// MOCK INSTAGRAM FASHION DATA\n// This simulates real Instagram posts about fashion\n\nconst mockInstagramPosts = [\n  {\n    id: \"post_001\",\n    username: \"fashionista_paris\",\n    caption: \"Loving the oversized blazer trend this season! Paired with vintage denim and chunky sneakers. #fashion #streetstyle #ootd #blazertrend\",\n    likes: 2847,\n    comments: 143,\n    hashtags: [\"fashion\", \"streetstyle\", \"ootd\", \"blazertrend\"],\n    posted_at: \"2025-11-24T10:30:00Z\",\n    image_url: \"https://example.com/blazer-denim.jpg\",\n    engagement_rate: 0.051\n  },\n  {\n    id: \"post_002\",\n    username: \"style_minimalist\",\n    caption: \"Monochrome everything. Beige, cream, and white tones dominating my wardrobe this fall. #minimalist #fashion #neutraltones #fallstyle\",\n    likes: 5621,\n    comments: 289,\n    hashtags: [\"minimalist\", \"fashion\", \"neutraltones\", \"fallstyle\"],\n    posted_at: \"2025-11-24T08:15:00Z\",\n    image_url: \"https://example.com/monochrome.jpg\",\n    engagement_rate: 0.089\n  },\n  {\n    id: \"post_003\",\n    username: \"urban_streetwear\",\n    caption: \"Cargo pants are BACK! Loving this utility style with oversized hoodies and chunky boots. #streetwear #cargopants #urbanism #fashion\",\n    likes: 8934,\n    comments: 456,\n    hashtags: [\"streetwear\", \"cargopants\", \"urbanism\", \"fashion\"],\n    posted_at: \"2025-11-23T19:45:00Z\",\n    image_url: \"https://example.com/cargo-style.jpg\",\n    engagement_rate: 0.095\n  },\n  {\n    id: \"post_004\",\n    username: \"vintage_vibes_ny\",\n    caption: \"Found this amazing 90s vintage leather jacket at a thrift store! Sustainable fashion is the future 💚 #vintage #thrifted #sustainablefashion #90sfashion\",\n    likes: 4123,\n    comments: 312,\n    hashtags: [\"vintage\", \"thrifted\", \"sustainablefashion\", \"90sfashion\"],\n    posted_at: \"2025-11-23T15:20:00Z\",\n    image_url: \"https://example.com/leather-jacket.jpg\",\n    engagement_rate: 0.076\n  },\n  {\n    id: \"post_005\",\n    username: \"colorful_couture\",\n    caption: \"Bold colors for fall! Who says autumn has to be dark? Loving this vibrant orange and pink combo. #colorblock #fashion #boldcolors #falltrends\",\n    likes: 6789,\n    comments: 234,\n    hashtags: [\"colorblock\", \"fashion\", \"boldcolors\", \"falltrends\"],\n    posted_at: \"2025-11-23T12:00:00Z\",\n    image_url: \"https://example.com/colorful.jpg\",\n    engagement_rate: 0.082\n  },\n  {\n    id: \"post_006\",\n    username: \"luxury_fashion_daily\",\n    caption: \"Investment piece of the season: The oversized trench coat. Timeless, elegant, and works with everything. Designer spotlight: Burberry, Max Mara #luxuryfashion #trenchcoat #investment #designer\",\n    likes: 12456,\n    comments: 678,\n    hashtags: [\"luxuryfashion\", \"trenchcoat\", \"investment\", \"designer\"],\n    posted_at: \"2025-11-22T16:30:00Z\",\n    image_url: \"https://example.com/trench-coat.jpg\",\n    engagement_rate: 0.105\n  },\n  {\n    id: \"post_007\",\n    username: \"eco_fashion_activist\",\n    caption: \"Sustainable brands to watch: Reformation, Patagonia, Everlane. Fashion can be ethical AND stylish! 🌱 #sustainablefashion #ecofashion #ethicalbrands\",\n    likes: 3421,\n    comments: 567,\n    hashtags: [\"sustainablefashion\", \"ecofashion\", \"ethicalbrands\"],\n    posted_at: \"2025-11-22T11:00:00Z\",\n    image_url: \"https://example.com/eco-fashion.jpg\",\n    engagement_rate: 0.116\n  },\n  {\n    id: \"post_008\",\n    username: \"sneaker_culture\",\n    caption: \"Chunky sneakers still dominating street style! New Balance 550 and Nike Dunks everywhere. #sneakers #streetstyle #fashion #sneakerhead\",\n    likes: 9876,\n    comments: 445,\n    hashtags: [\"sneakers\", \"streetstyle\", \"fashion\", \"sneakerhead\"],\n    posted_at: \"2025-11-21T20:15:00Z\",\n    image_url: \"https://example.com/sneakers.jpg\",\n    engagement_rate: 0.104\n  },\n  {\n    id: \"post_009\",\n    username: \"feminine_style_blog\",\n    caption: \"Bringing back romantic fashion: lace details, puff sleeves, and floral prints. Cottagecore vibes for fall 🌸 #cottagecore #romantic #fashion #feminine\",\n    likes: 5234,\n    comments: 198,\n    hashtags: [\"cottagecore\", \"romantic\", \"fashion\", \"feminine\"],\n    posted_at: \"2025-11-21T14:45:00Z\",\n    image_url: \"https://example.com/romantic-style.jpg\",\n    engagement_rate: 0.072\n  },\n  {\n    id: \"post_010\",\n    username: \"workwear_inspo\",\n    caption: \"Power dressing for the modern professional: tailored suits in unexpected colors. Navy is out, burgundy and forest green are in! #workwear #powerdressing #fashion #professional\",\n    likes: 4567,\n    comments: 156,\n    hashtags: [\"workwear\", \"powerdressing\", \"fashion\", \"professional\"],\n    posted_at: \"2025-11-21T09:30:00Z\",\n    image_url: \"https://example.com/workwear.jpg\",\n    engagement_rate: 0.068\n  }\n];\n\nreturn mockInstagramPosts.map(post => ({ json: post }));"
+      },
+      "id": "mock-instagram-data",
+      "name": "Mock Instagram Posts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILTER & CLEAN INSTAGRAM DATA\nconst posts = $input.all();\n\n// Filter posts with good engagement (>1000 likes)\nconst qualityPosts = posts.filter(item => item.json.likes > 1000);\n\n// Extract key information for analysis\nconst cleaned = qualityPosts.map(item => {\n  const post = item.json;\n  return {\n    id: post.id,\n    author: post.username,\n    caption: post.caption,\n    likes: post.likes,\n    comments: post.comments,\n    hashtags: post.hashtags.join(', '),\n    engagement_rate: post.engagement_rate,\n    posted_date: new Date(post.posted_at).toLocaleDateString('en-US')\n  };\n});\n\nreturn cleaned.map(post => ({ json: post }));"
+      },
+      "id": "filter-posts",
+      "name": "Filter Quality Posts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PREPARE DATA FOR AI ANALYSIS\nconst posts = $input.all();\n\n// Combine all captions and hashtags for trend analysis\nconst allText = posts.map(item => {\n  const post = item.json;\n  return `Post by @${post.author} (${post.likes} likes, ${post.comments} comments):\\n${post.caption}\\n`;\n}).join('\\n---\\n');\n\n// Create AI prompt\nconst prompt = `You are a fashion trend analyst. Analyze these Instagram posts and provide insights in JSON format.\n\nInstagram Posts:\n${allText}\n\nProvide analysis in this EXACT JSON format:\n{\n  \"top_trends\": [\"trend 1\", \"trend 2\", \"trend 3\", \"trend 4\", \"trend 5\"],\n  \"popular_colors\": [\"color 1\", \"color 2\", \"color 3\"],\n  \"popular_styles\": [\"style 1\", \"style 2\", \"style 3\"],\n  \"rising_hashtags\": [\"#hashtag1\", \"#hashtag2\", \"#hashtag3\"],\n  \"key_brands\": [\"brand 1\", \"brand 2\"],\n  \"sentiment\": \"positive/neutral/negative\",\n  \"summary\": \"2-3 sentence summary of current fashion trends\",\n  \"recommendations\": [\"recommendation 1\", \"recommendation 2\", \"recommendation 3\"]\n}\n\nBe specific and actionable. Focus on actual trends mentioned in the posts.`;\n\nreturn [{\n  json: {\n    prompt: prompt,\n    post_count: posts.length,\n    total_engagement: posts.reduce((sum, item) => sum + item.json.likes + item.json.comments, 0)\n  }\n}];"
+      },
+      "id": "prepare-ai-prompt",
+      "name": "Prepare AI Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 2000
+        }
+      },
+      "id": "openai-fashion-analysis",
+      "name": "AI Fashion Analysis (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ai-analysis-result",
+              "name": "ai_response",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "post-count-meta",
+              "name": "posts_analyzed",
+              "value": "={{ $('Prepare AI Analysis').item.json.post_count }}",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "extract-ai-response",
+      "name": "Extract AI Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE & FORMAT FINAL INSIGHTS\nconst aiResponse = $json.ai_response;\nconst postCount = $json.posts_analyzed;\n\nlet insights;\ntry {\n  // Try to parse JSON from AI response\n  // Remove markdown code blocks if present\n  const cleanResponse = aiResponse.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  insights = JSON.parse(cleanResponse);\n} catch (e) {\n  // If parsing fails, create a basic structure\n  insights = {\n    error: 'Failed to parse AI response',\n    raw_response: aiResponse.substring(0, 500)\n  };\n}\n\n// Format final report\nconst report = {\n  report_title: `Instagram Fashion Insights - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,\n  posts_analyzed: postCount,\n  analysis_date: new Date().toISOString(),\n  \n  // Trend insights\n  top_trends: insights.top_trends || [],\n  popular_colors: insights.popular_colors || [],\n  popular_styles: insights.popular_styles || [],\n  rising_hashtags: insights.rising_hashtags || [],\n  key_brands: insights.key_brands || [],\n  \n  // Overall sentiment\n  sentiment: insights.sentiment || 'neutral',\n  summary: insights.summary || 'No summary available',\n  \n  // Business recommendations\n  recommendations: insights.recommendations || [],\n  \n  // For further action\n  next_steps: [\n    'Monitor these trending hashtags daily',\n    'Consider collaborations with mentioned brands',\n    'Create content featuring popular colors',\n    'Engage with high-performing posts'\n  ]\n};\n\nreturn [{ json: report }];"
+      },
+      "id": "format-report",
+      "name": "Format Final Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "Start Scraper": {
+      "main": [
+        [
+          {
+            "node": "Mock Instagram Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Instagram Posts": {
+      "main": [
+        [
+          {
+            "node": "Filter Quality Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Quality Posts": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Fashion Analysis (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Fashion Analysis (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Response": {
+      "main": [
+        [
+          {
+            "node": "Format Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-25T11:00:00.000Z",
+  "versionId": "fashion-insights-mock-v1"
+}

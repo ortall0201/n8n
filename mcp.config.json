@@ -1,0 +1,54 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/mcp-config.json",
+  "mcpServers": {
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-figma"
+      ],
+      "env": {
+        "FIGMA_PERSONAL_ACCESS_TOKEN": "${FIGMA_PERSONAL_ACCESS_TOKEN}",
+        "FIGMA_FILE_KEY": "${FIGMA_FILE_KEY}"
+      },
+      "description": "Figma MCP server for reading designs and generating UI components from Figma files",
+      "capabilities": [
+        "read_figma_file",
+        "list_components",
+        "get_component_metadata",
+        "export_frames"
+      ]
+    }
+  },
+  "environmentVariables": {
+    "required": [
+      "FIGMA_PERSONAL_ACCESS_TOKEN",
+      "FIGMA_FILE_KEY"
+    ],
+    "descriptions": {
+      "FIGMA_PERSONAL_ACCESS_TOKEN": "Personal access token from Figma account settings (https://www.figma.com/developers/api#access-tokens)",
+      "FIGMA_FILE_KEY": "The file key from your Figma file URL (e.g., from https://www.figma.com/file/ABC123/MyDesign, the key is ABC123)"
+    }
+  },
+  "integrationFlow": {
+    "description": "Fashion Insights uses a two-layer automation architecture",
+    "layers": {
+      "ui": {
+        "source": "Figma (via MCP)",
+        "target": "lovable-ui/ folder",
+        "description": "UI components are generated from Figma designs using Figma MCP"
+      },
+      "automation": {
+        "tool": "n8n",
+        "description": "100% n8n-native automation for all data processing, email delivery, and workflow orchestration. Runs locally at localhost:5678 for testing."
+      }
+    },
+    "workflow": [
+      "1. Design UI in Figma",
+      "2. Run 'npm run figma:sync' to generate UI components from Figma",
+      "3. UI components connect to n8n webhook endpoints (localhost:5678/webhook/*)",
+      "4. n8n handles ALL automation: scraping, analysis, email, data sync, triggers, scheduling",
+      "5. All workflows run locally for testing - no external deployment needed"
+    ]
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "name": "Instagram Fashion Insights - Influencer Products + Voice AI",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-fashion",
+      "name": "Start Weekly Newsletter (Manual for Testing)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/snapshot/YOUR_DATASET_ID_HERE",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN_HERE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "brightdata-get-posts",
+      "name": "Bright Data - Get Instagram Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE BRIGHT DATA RESPONSE\nconst posts = $input.all();\n\nlet allPosts = [];\n\nif (posts.length > 0 && posts[0].json) {\n  if (Array.isArray(posts[0].json)) {\n    allPosts = posts[0].json;\n  } else if (posts[0].json.data && Array.isArray(posts[0].json.data)) {\n    allPosts = posts[0].json.data;\n  } else {\n    allPosts = posts.map(p => p.json);\n  }\n}\n\nconst transformed = allPosts.map(post => ({\n  json: {\n    id: post.post_id || post.pk,\n    username: post.user_posted,\n    caption: post.description || '',\n    likes: post.likes || 0,\n    comments: post.num_comments || 0,\n    hashtags: post.hashtags || [],\n    posted_at: post.date_posted,\n    image_url: post.photos && post.photos[0] ? post.photos[0] : post.thumbnail,\n    post_url: post.url,\n    engagement_rate: (post.likes + post.num_comments) / 1000,\n    tagged_products: post.product_tags || [],\n    shopping_url: post.shopping_url || null\n  }\n}));\n\nreturn transformed;"
+      },
+      "id": "parse-brightdata",
+      "name": "Parse Bright Data Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILTER & EXTRACT PRODUCT LINKS FROM POSTS\nconst posts = $input.all();\n\nconst qualityPosts = posts.filter(item => item.json.likes > 1000);\n\nconst cleaned = qualityPosts.map(item => {\n  const post = item.json;\n  \n  // Extract URLs from caption\n  const urlRegex = /(https?:\\/\\/[^\\s]+)/g;\n  const captionUrls = (post.caption.match(urlRegex) || []);\n  \n  // Common shopping domains\n  const shoppingDomains = ['shopmy.us', 'liketoknow.it', 'ltk.app', 'amazon.com', 'zara.com', 'hm.com', 'asos.com', 'nordstrom.com', 'revolve.com', 'shopbop.com'];\n  \n  // Filter for shopping links\n  const productLinks = captionUrls.filter(url => {\n    return shoppingDomains.some(domain => url.toLowerCase().includes(domain));\n  });\n  \n  // Extract coupon codes from caption (common patterns)\n  const couponRegex = /(?:code|promo|discount|use)\\s*[:\"]?\\s*([A-Z0-9]{4,15})/gi;\n  const coupons = [];\n  let match;\n  while ((match = couponRegex.exec(post.caption)) !== null) {\n    coupons.push(match[1]);\n  }\n  \n  return {\n    id: post.id,\n    author: post.username,\n    caption: post.caption,\n    likes: post.likes,\n    comments: post.comments,\n    hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(', ') : '',\n    engagement_rate: post.engagement_rate,\n    posted_date: new Date(post.posted_at).toLocaleDateString('en-US'),\n    image_url: post.image_url,\n    post_url: post.post_url,\n    product_links: productLinks,\n    has_products: productLinks.length > 0 || post.shopping_url !== null,\n    shopping_url: post.shopping_url,\n    coupon_codes: coupons,\n    has_coupons: coupons.length > 0\n  };\n});\n\nreturn cleaned.map(post => ({ json: post }));"
+      },
+      "id": "filter-extract-products",
+      "name": "Filter Posts & Extract Product Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PREPARE DATA FOR AI ANALYSIS\nconst posts = $input.all();\n\nconst allText = posts.map(item => {\n  const post = item.json;\n  return `Post by @${post.author} (${post.likes} likes, ${post.comments} comments):\\n${post.caption}\\n`;\n}).join('\\n---\\n');\n\nconst prompt = `You are a fashion trend analyst. Analyze these Instagram posts and provide insights in JSON format.\n\nInstagram Posts:\n${allText}\n\nProvide analysis in this EXACT JSON format:\n{\n  \"top_trends\": [\"trend 1\", \"trend 2\", \"trend 3\", \"trend 4\", \"trend 5\"],\n  \"popular_colors\": [\"color 1\", \"color 2\", \"color 3\"],\n  \"popular_styles\": [\"style 1\", \"style 2\", \"style 3\"],\n  \"rising_hashtags\": [\"#hashtag1\", \"#hashtag2\", \"#hashtag3\"],\n  \"key_brands\": [\"brand 1\", \"brand 2\"],\n  \"sentiment\": \"positive/neutral/negative\",\n  \"summary\": \"2-3 sentence summary of current fashion trends\",\n  \"recommendations\": [\"recommendation 1\", \"recommendation 2\", \"recommendation 3\"]\n}\n\nBe specific and actionable. Focus on actual trends mentioned in the posts.`;\n\nreturn [{\n  json: {\n    prompt: prompt,\n    post_count: posts.length,\n    total_engagement: posts.reduce((sum, item) => sum + item.json.likes + item.json.comments, 0)\n  }\n}];"
+      },
+      "id": "prepare-ai-prompt",
+      "name": "Prepare AI Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 2000
+        }
+      },
+      "id": "openai-fashion-analysis",
+      "name": "AI Fashion Analysis (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ai-analysis-result",
+              "name": "ai_response",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "post-count-meta",
+              "name": "posts_analyzed",
+              "value": "={{ $('Prepare AI Analysis').item.json.post_count }}",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "extract-ai-response",
+      "name": "Extract AI Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE & FORMAT FINAL INSIGHTS\nconst aiResponse = $json.ai_response;\nconst postCount = $json.posts_analyzed;\n\nlet insights;\ntry {\n  const cleanResponse = aiResponse.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  insights = JSON.parse(cleanResponse);\n} catch (e) {\n  insights = {\n    error: 'Failed to parse AI response',\n    raw_response: aiResponse.substring(0, 500)\n  };\n}\n\nconst report = {\n  report_title: `Instagram Fashion Insights - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,\n  posts_analyzed: postCount,\n  analysis_date: new Date().toISOString(),\n  top_trends: insights.top_trends || [],\n  popular_colors: insights.popular_colors || [],\n  popular_styles: insights.popular_styles || [],\n  rising_hashtags: insights.rising_hashtags || [],\n  key_brands: insights.key_brands || [],\n  sentiment: insights.sentiment || 'neutral',\n  summary: insights.summary || 'No summary available',\n  recommendations: insights.recommendations || []\n};\n\nreturn [{ json: report }];"
+      },
+      "id": "format-report",
+      "name": "Format Final Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "sheetName": {
+          "__rl": true,
+          "value": "Subscribers",
+          "mode": "list"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "get-subscribers",
+      "name": "Get Subscribers from Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2000, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILTER ACTIVE SUBSCRIBERS\nconst subscribers = $input.all();\n\nconst activeSubscribers = subscribers.filter(item => {\n  const status = item.json.status?.toLowerCase();\n  return status === 'active' || status === 'subscribed';\n});\n\nreturn activeSubscribers;"
+      },
+      "id": "filter-subscribers",
+      "name": "Filter Active Subscribers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "loop-subscribers",
+      "name": "Loop Over Subscribers",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PREPARE EMAIL WITH INSIGHTS, INSTAGRAM POSTS & INFLUENCER PRODUCTS\nconst insights = $('Format Final Report').first().json;\nconst subscriber = $json;\nconst allPosts = $('Filter Posts & Extract Product Links').all();\nconst topPosts = allPosts.slice(0, 5);\nconst postsWithProducts = allPosts.filter(item => item.json.has_products).slice(0, 5);\n\nconst currentDate = new Date().toLocaleDateString('en-US', { \n  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' \n});\n\nconst subscriberName = subscriber.name || subscriber.email.split('@')[0];\n\n// Featured Instagram Posts\nconst featuredPostsHTML = topPosts.map(item => {\n  const post = item.json;\n  const shortCaption = post.caption.substring(0, 150) + (post.caption.length > 150 ? '...' : '');\n  \n  return `\n    <div style=\"margin: 20px 0; padding: 20px; border-bottom: 1px solid #eee;\">\n      <img src=\"${post.image_url}\" width=\"300\" style=\"border-radius: 8px; display: block; margin-bottom: 10px;\"><br>\n      <strong>@${post.author}</strong><br>\n      <p style=\"color: #333; line-height: 1.6;\">${shortCaption}</p>\n      <p style=\"color: #999; font-size: 14px;\">❤️ ${post.likes.toLocaleString()} likes • 💬 ${post.comments} comments</p>\n      <a href=\"${post.post_url}\" style=\"color: #667eea; text-decoration: none;\">View on Instagram →</a>\n    </div>\n  `;\n}).join('');\n\n// Influencer Products Section\nconst productsHTML = postsWithProducts.length > 0 ? `\n  <tr>\n    <td style=\"padding: 30px; background-color: #fff5f5;\">\n      <h3 style=\"margin: 0 0 10px; color: #333;\">🛍️ Shop Influencer Picks</h3>\n      <p style=\"margin: 0 0 20px; color: #666; font-size: 14px;\">Products featured by top fashion influencers this week</p>\n      \n      ${postsWithProducts.map(item => {\n        const post = item.json;\n        const productUrl = post.shopping_url || post.product_links[0] || post.post_url;\n        const shortCaption = post.caption.substring(0, 80) + (post.caption.length > 80 ? '...' : '');\n        \n        return `\n        <div style=\"margin: 15px 0; padding: 15px; background-color: white; border-radius: 8px; border: 1px solid #ffd6d6;\">\n          <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td width=\"100\" valign=\"top\">\n                <img src=\"${post.image_url}\" width=\"90\" style=\"border-radius: 6px; display: block;\">\n              </td>\n              <td valign=\"top\" style=\"padding-left: 15px;\">\n                <p style=\"margin: 0 0 5px; color: #667eea; font-size: 13px; font-weight: 600;\">@${post.author}</p>\n                <p style=\"margin: 0 0 10px; color: #666; font-size: 14px; line-height: 1.4;\">${shortCaption}</p>\n                ${post.has_coupons ? `<p style=\"margin: 0 0 10px; padding: 8px; background-color: #fff9e6; border-radius: 4px; font-family: monospace; font-size: 13px; color: #d97706;\">🎟️ Code: <strong>${post.coupon_codes.join(', ')}</strong></p>` : ''}\n                <p style=\"margin: 0;\">\n                  <a href=\"${productUrl}\" style=\"display: inline-block; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 600;\">Shop This Look →</a>\n                </p>\n              </td>\n            </tr>\n          </table>\n        </div>\n        `;\n      }).join('')}\n      \n      <p style=\"margin: 20px 0 0; padding: 15px; background-color: #fff; border: 1px dashed #ddd; border-radius: 6px; text-align: center; color: #999; font-size: 13px;\">\n        <em>Note: Some links may be affiliate links. Shopping through them supports our newsletter at no extra cost to you! 💜</em>\n      </p>\n    </td>\n  </tr>\n` : '';\n\nconst emailHTML = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n</head>\n<body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #f5f5f5; padding: 20px 0;\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden;\">\n          \n          <!-- Header -->\n          <tr>\n            <td style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; color: white;\">\n              <h1 style=\"margin: 0; font-size: 32px;\">📸 Fashion Insights</h1>\n              <p style=\"margin: 10px 0 0; font-size: 16px; opacity: 0.9;\">${currentDate}</p>\n              <p style=\"margin: 5px 0 0; font-size: 14px; opacity: 0.8;\">Hi ${subscriberName}!</p>\n            </td>\n          </tr>\n          \n          <!-- Summary -->\n          <tr>\n            <td style=\"padding: 30px;\">\n              <h2 style=\"margin: 0 0 15px; color: #333;\">🔥 This Week's Trends</h2>\n              <p style=\"margin: 0; color: #666; line-height: 1.8;\">${insights.summary}</p>\n              <p style=\"margin: 15px 0 0; padding: 15px; background-color: #f8f9fa; border-radius: 6px; color: #555;\">\n                <strong>Sentiment:</strong> ${insights.sentiment.toUpperCase()} • <strong>Posts Analyzed:</strong> ${insights.posts_analyzed}\n              </p>\n            </td>\n          </tr>\n          \n          <!-- Top Trends -->\n          <tr>\n            <td style=\"padding: 30px; background-color: #fafafa;\">\n              <h3 style=\"margin: 0 0 15px; color: #333;\">✨ Top 5 Trends</h3>\n              <ol style=\"margin: 0; padding-left: 20px; color: #666; line-height: 1.8;\">\n                ${insights.top_trends.map(trend => `<li>${trend}</li>`).join('')}\n              </ol>\n            </td>\n          </tr>\n          \n          <!-- Colors & Brands -->\n          <tr>\n            <td style=\"padding: 30px;\">\n              <h3 style=\"margin: 0 0 15px; color: #333;\">🎨 Popular Colors</h3>\n              <p style=\"margin: 0 0 25px; color: #666;\">${insights.popular_colors.join(', ')}</p>\n              \n              <h3 style=\"margin: 0 0 15px; color: #333;\">🏷️ Key Brands</h3>\n              <p style=\"margin: 0 0 25px; color: #666;\">${insights.key_brands.join(', ')}</p>\n              \n              <h3 style=\"margin: 0 0 15px; color: #333;\">#️⃣ Rising Hashtags</h3>\n              <p style=\"margin: 0; color: #667eea; font-family: monospace;\">${insights.rising_hashtags.join(' • ')}</p>\n            </td>\n          </tr>\n          \n          <!-- INFLUENCER PRODUCTS SECTION -->\n          ${productsHTML}\n          \n          <!-- Featured Posts -->\n          <tr>\n            <td style=\"padding: 30px; background-color: #fafafa;\">\n              <h3 style=\"margin: 0 0 20px; color: #333;\">📌 Featured Posts</h3>\n              ${featuredPostsHTML}\n            </td>\n          </tr>\n          \n          <!-- Recommendations -->\n          <tr>\n            <td style=\"padding: 30px;\">\n              <h3 style=\"margin: 0 0 15px; color: #333;\">💡 Business Recommendations</h3>\n              <ol style=\"margin: 0; padding-left: 20px; color: #666; line-height: 1.8;\">\n                ${insights.recommendations.map(rec => `<li>${rec}</li>`).join('')}\n              </ol>\n            </td>\n          </tr>\n          \n          <!-- Newsletter Signup CTA -->\n          <tr>\n            <td style=\"padding: 30px; background-color: #f0f9ff; text-align: center;\">\n              <h3 style=\"margin: 0 0 10px; color: #333;\">💌 Love This Newsletter?</h3>\n              <p style=\"margin: 0 0 20px; color: #666;\">Share it with fashion-loving friends!</p>\n              <a href=\"https://YOUR_WEBSITE.com/subscribe\" style=\"display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600;\">Subscribe to Fashion Insights</a>\n            </td>\n          </tr>\n          \n          <!-- Footer -->\n          <tr>\n            <td style=\"padding: 20px; text-align: center; background-color: #f8f9fa; color: #999;\">\n              <p style=\"margin: 0; font-size: 14px;\">Fashion Insights Newsletter • Powered by AI</p>\n              <p style=\"margin: 5px 0 0; font-size: 12px;\">You're receiving this because you subscribed to Fashion Insights</p>\n              <p style=\"margin: 10px 0 0; font-size: 12px;\">\n                <a href=\"https://YOUR_WEBSITE.com/unsubscribe?email=${subscriber.email}\" style=\"color: #999; text-decoration: underline;\">Unsubscribe</a>\n              </p>\n            </td>\n          </tr>\n          \n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    to: subscriber.email,\n    name: subscriberName,\n    subject: `📸 Fashion Insights: ${insights.top_trends[0]} + Influencer Picks! 🛍️`,\n    html: emailHTML\n  }\n}];"
+      },
+      "id": "prepare-email",
+      "name": "Prepare Email with Products",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2660, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "ortalgr@gmail.com",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "html",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Newsletter via Mailjet",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2880, 300],
+      "credentials": {
+        "smtp": {
+          "id": "MAILJET_SMTP_CREDENTIAL",
+          "name": "Mailjet SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "loop-back",
+      "name": "Loop Back",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [3100, 300]
+    }
+  ],
+  "connections": {
+    "Start Weekly Newsletter": {
+      "main": [[{"node": "Bright Data - Get Instagram Posts", "type": "main", "index": 0}]]
+    },
+    "Bright Data - Get Instagram Posts": {
+      "main": [[{"node": "Parse Bright Data Response", "type": "main", "index": 0}]]
+    },
+    "Parse Bright Data Response": {
+      "main": [[{"node": "Filter Posts & Extract Product Links", "type": "main", "index": 0}]]
+    },
+    "Filter Posts & Extract Product Links": {
+      "main": [[{"node": "Prepare AI Analysis", "type": "main", "index": 0}]]
+    },
+    "Prepare AI Analysis": {
+      "main": [[{"node": "AI Fashion Analysis (OpenAI)", "type": "main", "index": 0}]]
+    },
+    "AI Fashion Analysis (OpenAI)": {
+      "main": [[{"node": "Extract AI Response", "type": "main", "index": 0}]]
+    },
+    "Extract AI Response": {
+      "main": [[{"node": "Format Final Report", "type": "main", "index": 0}]]
+    },
+    "Format Final Report": {
+      "main": [[{"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0}]]
+    },
+    "Get Subscribers from Google Sheets": {
+      "main": [[{"node": "Filter Active Subscribers", "type": "main", "index": 0}]]
+    },
+    "Filter Active Subscribers": {
+      "main": [[{"node": "Loop Over Subscribers", "type": "main", "index": 0}]]
+    },
+    "Loop Over Subscribers": {
+      "main": [[{"node": "Prepare Email with Products", "type": "main", "index": 0}]]
+    },
+    "Prepare Email with Products": {
+      "main": [[{"node": "Send Newsletter via Mailjet", "type": "main", "index": 0}]]
+    },
+    "Send Newsletter via Mailjet": {
+      "main": [[{"node": "Loop Back", "type": "main", "index": 0}]]
+    },
+    "Loop Back": {
+      "main": [
+        [{"node": "Loop Over Subscribers", "type": "main", "index": 0}],
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-26T00:00:00.000Z",
+  "versionId": "fashion-insights-influencer-products-v1"
+}

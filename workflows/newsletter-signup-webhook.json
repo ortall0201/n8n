@@ -1,0 +1,241 @@
+{
+  "name": "Newsletter Signup Form - Save to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "newsletter-signup",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-signup",
+      "name": "Webhook - Newsletter Signup",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "newsletter-signup-form"
+    },
+    {
+      "parameters": {
+        "jsCode": "// VALIDATE AND CLEAN SIGNUP DATA\nconst data = $input.first().json.body;\n\n// Extract email and name from form\nconst email = (data.email || '').trim().toLowerCase();\nconst name = (data.name || '').trim();\n\n// Basic email validation\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nconst isValidEmail = emailRegex.test(email);\n\nif (!isValidEmail) {\n  return [{\n    json: {\n      error: true,\n      message: 'Invalid email address'\n    }\n  }];\n}\n\n// Check if email is from a disposable email provider (optional)\nconst disposableDomains = ['tempmail.com', '10minutemail.com', 'guerrillamail.com'];\nconst emailDomain = email.split('@')[1];\nconst isDisposable = disposableDomains.includes(emailDomain);\n\nif (isDisposable) {\n  return [{\n    json: {\n      error: true,\n      message: 'Please use a permanent email address'\n    }\n  }];\n}\n\n// Prepare subscriber data\nreturn [{\n  json: {\n    email: email,\n    name: name || email.split('@')[0],\n    status: 'active',\n    signup_date: new Date().toISOString().split('T')[0],\n    signup_timestamp: new Date().toISOString(),\n    source: 'website_form',\n    ip_address: $input.first().json.headers['x-forwarded-for'] || $input.first().json.headers['x-real-ip'] || 'unknown'\n  }\n}];"
+      },
+      "id": "validate-clean",
+      "name": "Validate & Clean Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "sheetName": {
+          "__rl": true,
+          "value": "Subscribers",
+          "mode": "list"
+        },
+        "returnAll": true,
+        "options": {
+          "range": "A:A"
+        }
+      },
+      "id": "check-existing",
+      "name": "Check if Email Exists",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [680, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// CHECK FOR DUPLICATE EMAIL\nconst newSubscriber = $('Validate & Clean Data').first().json;\nconst existingEmails = $input.all();\n\n// Check if email already exists\nconst emailExists = existingEmails.some(item => {\n  return item.json.email && item.json.email.toLowerCase() === newSubscriber.email.toLowerCase();\n});\n\nif (emailExists) {\n  return [{\n    json: {\n      error: true,\n      message: 'This email is already subscribed!',\n      duplicate: true\n    }\n  }];\n}\n\n// Email is new, proceed with signup\nreturn [{\n  json: {\n    ...newSubscriber,\n    error: false,\n    duplicate: false\n  }\n}];"
+      },
+      "id": "check-duplicate",
+      "name": "Check for Duplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "if-valid",
+      "name": "If Valid & New",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "value": "Subscribers",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ $json.email }}",
+            "name": "={{ $json.name }}",
+            "status": "={{ $json.status }}",
+            "signup_date": "={{ $json.signup_date }}",
+            "signup_timestamp": "={{ $json.signup_timestamp }}",
+            "source": "={{ $json.source }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "add-subscriber",
+      "name": "Add to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1340, 240],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-message",
+              "name": "success",
+              "value": "true",
+              "type": "boolean"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "Welcome! You're now subscribed to Fashion Insights! 🎉",
+              "type": "string"
+            },
+            {
+              "id": "email-sent",
+              "name": "email",
+              "value": "={{ $('Validate & Clean Data').first().json.email }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 240]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-flag",
+              "name": "success",
+              "value": "false",
+              "type": "boolean"
+            },
+            {
+              "id": "error-message",
+              "name": "message",
+              "value": "={{ $json.message || 'An error occurred. Please try again.' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 360]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Newsletter Signup": {
+      "main": [[{"node": "Validate & Clean Data", "type": "main", "index": 0}]]
+    },
+    "Validate & Clean Data": {
+      "main": [[{"node": "Check if Email Exists", "type": "main", "index": 0}]]
+    },
+    "Check if Email Exists": {
+      "main": [[{"node": "Check for Duplicate", "type": "main", "index": 0}]]
+    },
+    "Check for Duplicate": {
+      "main": [[{"node": "If Valid & New", "type": "main", "index": 0}]]
+    },
+    "If Valid & New": {
+      "main": [
+        [{"node": "Add to Google Sheets", "type": "main", "index": 0}],
+        [{"node": "Error Response", "type": "main", "index": 0}]
+      ]
+    },
+    "Add to Google Sheets": {
+      "main": [[{"node": "Success Response", "type": "main", "index": 0}]]
+    },
+    "Success Response": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    },
+    "Error Response": {
+      "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-26T00:00:00.000Z",
+  "versionId": "newsletter-signup-v1"
+}

@@ -1,0 +1,135 @@
+<!-- Newsletter Template with Personal About Section -->
+<!-- This template should be used in the "Prepare Email with Products" node -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1A1A1A 0%, #4A4A4A 100%); padding: 40px; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 300; letter-spacing: 1px;">Fashion Insights</h1>
+              <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.9; font-weight: 300;">
+                {{ currentDate }}
+              </p>
+              <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.8;">
+                Hi {{ subscriberName }}!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Summary -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="margin: 0 0 15px; color: #1A1A1A; font-size: 22px; font-weight: 400;">
+                This Week's Trends
+              </h2>
+              <p style="margin: 0; color: #4A4A4A; line-height: 1.8; font-size: 16px;">
+                {{ insights.summary }}
+              </p>
+              <p style="margin: 20px 0 0; padding: 15px; background-color: #FAFAF8; border-left: 3px solid #1A1A1A; color: #4A4A4A; font-size: 14px;">
+                <strong>Sentiment:</strong> {{ insights.sentiment }} •
+                <strong>Posts Analyzed:</strong> {{ insights.posts_analyzed }}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Top Trends -->
+          <tr>
+            <td style="padding: 30px; background-color: #FAFAF8;">
+              <h3 style="margin: 0 0 15px; color: #1A1A1A; font-size: 18px; font-weight: 400;">
+                Top 5 Trends
+              </h3>
+              <ol style="margin: 0; padding-left: 20px; color: #4A4A4A; line-height: 2; font-size: 15px;">
+                {{ insights.top_trends }}
+              </ol>
+            </td>
+          </tr>
+
+          <!-- Influencer Products Section -->
+          <tr>
+            <td style="padding: 40px 30px; background-color: #FFF9F5;">
+              <h3 style="margin: 0 0 10px; color: #1A1A1A; font-size: 18px; font-weight: 400;">
+                🛍️ Influencer Picks
+              </h3>
+              <p style="margin: 0 0 20px; color: #666; font-size: 14px;">
+                Products featured by creators this week
+              </p>
+
+              <!-- Product Cards -->
+              {{ influencerProducts }}
+
+              <p style="margin: 25px 0 0; padding: 15px; background-color: #fff; border: 1px dashed #E0E0E0; border-radius: 6px; text-align: center; color: #999; font-size: 12px; line-height: 1.6;">
+                Note: Product links may be affiliate links. We analyze public posts—not affiliated with influencers or Instagram.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Recommendations -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h3 style="margin: 0 0 15px; color: #1A1A1A; font-size: 18px; font-weight: 400;">
+                Recommendations
+              </h3>
+              <ul style="margin: 0; padding-left: 20px; color: #4A4A4A; line-height: 2; font-size: 15px;">
+                {{ insights.recommendations }}
+              </ul>
+            </td>
+          </tr>
+
+          <!-- About Section (NEW - Personal) -->
+          <tr>
+            <td style="padding: 40px 30px; background-color: #F8F8F8; border-top: 1px solid #E0E0E0;">
+              <h4 style="margin: 0 0 12px; color: #1A1A1A; font-size: 16px; font-weight: 500;">
+                About Fashion Insights
+              </h4>
+              <p style="margin: 0 0 12px; color: #666; font-size: 14px; line-height: 1.7;">
+                Fashion Insights is created by me, <strong>Ortal</strong>. I'm a data scientist, vibe coder and vibe solver who loves turning creator signals into simple, useful insights about what's trending in fashion and culture.
+              </p>
+              <p style="margin: 0 0 12px; color: #666; font-size: 14px; line-height: 1.7;">
+                I use data, AI and intuition to uncover patterns that feel real and make sense.
+              </p>
+              <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.7;">
+                If you'd like to explore ideas or collaborate on something in fashion-tech or AI, I'd be happy to connect:
+                <a href="mailto:ortal@onsight-analytics.com" style="color: #1A1A1A; text-decoration: none; font-weight: 500;">ortal@onsight-analytics.com</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px; text-align: center; background-color: #1A1A1A; color: rgba(255,255,255,0.7);">
+              <p style="margin: 0 0 15px; font-size: 13px; line-height: 1.6;">
+                Fashion Insights is a personal project built with curiosity and care.<br>
+                Not affiliated with Instagram, Meta, or any fashion brands.
+              </p>
+
+              <p style="margin: 0 0 15px; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.6);">
+                This is an independent trend analysis tool. We analyze only public data,<br>
+                never re-host influencer content, and always link to original posts.<br>
+                All content rights remain with original creators.
+              </p>
+
+              <p style="margin: 0; font-size: 12px;">
+                <a href="{{ unsubscribeUrl }}" style="color: rgba(255,255,255,0.6); text-decoration: underline;">Unsubscribe</a> •
+                <a href="https://yoursite.com/about" style="color: rgba(255,255,255,0.6); text-decoration: underline;">About</a> •
+                <a href="https://yoursite.com/legal/disclaimer" style="color: rgba(255,255,255,0.6); text-decoration: underline;">Disclaimer</a> •
+                <a href="https://yoursite.com/legal/privacy" style="color: rgba(255,255,255,0.6); text-decoration: underline;">Privacy</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

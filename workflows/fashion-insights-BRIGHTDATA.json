@@ -1,0 +1,215 @@
+{
+  "name": "Instagram Fashion Insights - Bright Data (REAL)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-fashion",
+      "name": "Start Scraper",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/snapshot/YOUR_DATASET_ID_HERE",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN_HERE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "brightdata-get-posts",
+      "name": "Bright Data - Get Instagram Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE BRIGHT DATA RESPONSE\n// Bright Data returns an array of posts directly\nconst posts = $input.all();\n\n// If the response is nested, extract it\nlet allPosts = [];\n\nif (posts.length > 0 && posts[0].json) {\n  // Check if response is array directly or nested\n  if (Array.isArray(posts[0].json)) {\n    allPosts = posts[0].json;\n  } else if (posts[0].json.data && Array.isArray(posts[0].json.data)) {\n    allPosts = posts[0].json.data;\n  } else {\n    // Single post response\n    allPosts = posts.map(p => p.json);\n  }\n}\n\n// Transform Bright Data format to our standard format\nconst transformed = allPosts.map(post => ({\n  json: {\n    id: post.post_id || post.pk,\n    username: post.user_posted,\n    caption: post.description || '',\n    likes: post.likes || 0,\n    comments: post.num_comments || 0,\n    hashtags: post.hashtags || [],\n    posted_at: post.date_posted,\n    image_url: post.photos && post.photos[0] ? post.photos[0] : post.thumbnail,\n    engagement_rate: (post.likes + post.num_comments) / 1000 // Rough estimate\n  }\n}));\n\nreturn transformed;"
+      },
+      "id": "parse-brightdata",
+      "name": "Parse Bright Data Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILTER & CLEAN INSTAGRAM DATA\nconst posts = $input.all();\n\n// Filter posts with good engagement (>1000 likes)\nconst qualityPosts = posts.filter(item => item.json.likes > 1000);\n\n// Extract key information for analysis\nconst cleaned = qualityPosts.map(item => {\n  const post = item.json;\n  return {\n    id: post.id,\n    author: post.username,\n    caption: post.caption,\n    likes: post.likes,\n    comments: post.comments,\n    hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(', ') : '',\n    engagement_rate: post.engagement_rate,\n    posted_date: new Date(post.posted_at).toLocaleDateString('en-US')\n  };\n});\n\nreturn cleaned.map(post => ({ json: post }));"
+      },
+      "id": "filter-posts",
+      "name": "Filter Quality Posts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PREPARE DATA FOR AI ANALYSIS\nconst posts = $input.all();\n\n// Combine all captions and hashtags for trend analysis\nconst allText = posts.map(item => {\n  const post = item.json;\n  return `Post by @${post.author} (${post.likes} likes, ${post.comments} comments):\\n${post.caption}\\n`;\n}).join('\\n---\\n');\n\n// Create AI prompt\nconst prompt = `You are a fashion trend analyst. Analyze these Instagram posts and provide insights in JSON format.\n\nInstagram Posts:\n${allText}\n\nProvide analysis in this EXACT JSON format:\n{\n  \"top_trends\": [\"trend 1\", \"trend 2\", \"trend 3\", \"trend 4\", \"trend 5\"],\n  \"popular_colors\": [\"color 1\", \"color 2\", \"color 3\"],\n  \"popular_styles\": [\"style 1\", \"style 2\", \"style 3\"],\n  \"rising_hashtags\": [\"#hashtag1\", \"#hashtag2\", \"#hashtag3\"],\n  \"key_brands\": [\"brand 1\", \"brand 2\"],\n  \"sentiment\": \"positive/neutral/negative\",\n  \"summary\": \"2-3 sentence summary of current fashion trends\",\n  \"recommendations\": [\"recommendation 1\", \"recommendation 2\", \"recommendation 3\"]\n}\n\nBe specific and actionable. Focus on actual trends mentioned in the posts.`;\n\nreturn [{\n  json: {\n    prompt: prompt,\n    post_count: posts.length,\n    total_engagement: posts.reduce((sum, item) => sum + item.json.likes + item.json.comments, 0)\n  }\n}];"
+      },
+      "id": "prepare-ai-prompt",
+      "name": "Prepare AI Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "message",
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 2000
+        }
+      },
+      "id": "openai-fashion-analysis",
+      "name": "AI Fashion Analysis (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ai-analysis-result",
+              "name": "ai_response",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "post-count-meta",
+              "name": "posts_analyzed",
+              "value": "={{ $('Prepare AI Analysis').item.json.post_count }}",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "extract-ai-response",
+      "name": "Extract AI Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE & FORMAT FINAL INSIGHTS\nconst aiResponse = $json.ai_response;\nconst postCount = $json.posts_analyzed;\n\nlet insights;\ntry {\n  // Try to parse JSON from AI response\n  // Remove markdown code blocks if present\n  const cleanResponse = aiResponse.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  insights = JSON.parse(cleanResponse);\n} catch (e) {\n  // If parsing fails, create a basic structure\n  insights = {\n    error: 'Failed to parse AI response',\n    raw_response: aiResponse.substring(0, 500)\n  };\n}\n\n// Format final report\nconst report = {\n  report_title: `Instagram Fashion Insights - ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`,\n  posts_analyzed: postCount,\n  analysis_date: new Date().toISOString(),\n  \n  // Trend insights\n  top_trends: insights.top_trends || [],\n  popular_colors: insights.popular_colors || [],\n  popular_styles: insights.popular_styles || [],\n  rising_hashtags: insights.rising_hashtags || [],\n  key_brands: insights.key_brands || [],\n  \n  // Overall sentiment\n  sentiment: insights.sentiment || 'neutral',\n  summary: insights.summary || 'No summary available',\n  \n  // Business recommendations\n  recommendations: insights.recommendations || [],\n  \n  // For further action\n  next_steps: [\n    'Monitor these trending hashtags daily',\n    'Consider collaborations with mentioned brands',\n    'Create content featuring popular colors',\n    'Engage with high-performing posts'\n  ]\n};\n\nreturn [{ json: report }];"
+      },
+      "id": "format-report",
+      "name": "Format Final Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "Start Scraper": {
+      "main": [
+        [
+          {
+            "node": "Bright Data - Get Instagram Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bright Data - Get Instagram Posts": {
+      "main": [
+        [
+          {
+            "node": "Parse Bright Data Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Bright Data Response": {
+      "main": [
+        [
+          {
+            "node": "Filter Quality Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Quality Posts": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Fashion Analysis (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Fashion Analysis (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Response": {
+      "main": [
+        [
+          {
+            "node": "Format Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-25T17:00:00.000Z",
+  "versionId": "fashion-insights-brightdata-v1"
+}
