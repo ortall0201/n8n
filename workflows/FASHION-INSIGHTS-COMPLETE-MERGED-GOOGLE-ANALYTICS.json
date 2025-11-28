@@ -499,10 +499,7 @@
       ]]
     },
     "Devi Blog Post Generator": {
-      "main": [[
-        {"node": "Devi Affiliate Link Processor", "type": "main", "index": 0},
-        {"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}
-      ]]
+      "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
     },
     "Devi Instagram Script Generator": {
       "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
@@ -529,7 +526,8 @@
     "Devi Affiliate Link Processor": {
       "main": [[
         {"node": "📊 Prepare Analytics for Google Sheets", "type": "main", "index": 0},
-        {"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0}
+        {"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0},
+        {"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}
       ]]
     },
     "📊 Prepare Analytics for Google Sheets": {
