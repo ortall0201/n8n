@@ -407,51 +407,90 @@
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/blog.html\" << 'EOFBLOG'\n{{ $json.blog_html }}\nEOFBLOG",
-        "description": "Save blog HTML to GitHub repo"
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/blog.html",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
+            {"name": "Accept", "value": "application/vnd.github+json"}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - blog.html"},
+            {"name": "content", "value": "={{ $base64Encode($json.blog_html) }}"}
+          ]
+        },
+        "options": {}
       },
       "id": "save-blog-github",
       "name": "💾 Save Blog to GitHub",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [3520, 200],
-      "notes": "Saves blog HTML to devi-content/week-XX/"
+      "notes": "Saves blog HTML directly to GitHub via API"
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/instagram-script.txt\" << 'EOFIG'\n{{ $json.instagram_text }}\nEOFIG",
-        "description": "Save Instagram script to GitHub repo"
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/instagram-script.txt",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
+            {"name": "Accept", "value": "application/vnd.github+json"}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - instagram-script.txt"},
+            {"name": "content", "value": "={{ $base64Encode($json.instagram_text) }}"}
+          ]
+        },
+        "options": {}
       },
       "id": "save-ig-github",
       "name": "💾 Save Instagram to GitHub",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [3520, 300],
-      "notes": "Saves Instagram script to devi-content/week-XX/"
+      "notes": "Saves Instagram script directly to GitHub via API"
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/tiktok-script.txt\" << 'EOFTIKTOK'\n{{ $json.tiktok_text }}\nEOFTIKTOK",
-        "description": "Save TikTok script to GitHub repo"
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/tiktok-script.txt",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
+            {"name": "Accept", "value": "application/vnd.github+json"}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - tiktok-script.txt"},
+            {"name": "content", "value": "={{ $base64Encode($json.tiktok_text) }}"}
+          ]
+        },
+        "options": {}
       },
       "id": "save-tiktok-github",
       "name": "💾 Save TikTok to GitHub",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [3520, 400],
-      "notes": "Saves TikTok script to devi-content/week-XX/"
-    },
-    {
-      "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && git add devi-content/week-{{ $json.week_number }}/ && git commit -m \"💜 Devi Week {{ $json.week_number }} content - $(date +%Y-%m-%d)\" && echo \"✅ Content saved to devi-content/week-{{ $json.week_number }}/\"",
-        "description": "Commit Devi content to GitHub"
-      },
-      "id": "commit-github",
-      "name": "📝 Commit to GitHub",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [3720, 300],
-      "notes": "Git commits all Devi content for this week"
+      "notes": "Saves TikTok script directly to GitHub via API"
     }
   ],
   "connections": {
@@ -541,13 +580,13 @@
       ]]
     },
     "💾 Save Blog to GitHub": {
-      "main": [[{"node": "📝 Commit to GitHub", "type": "main", "index": 0}]]
+      "main": [[]]
     },
     "💾 Save Instagram to GitHub": {
-      "main": [[{"node": "📝 Commit to GitHub", "type": "main", "index": 0}]]
+      "main": [[]]
     },
     "💾 Save TikTok to GitHub": {
-      "main": [[{"node": "📝 Commit to GitHub", "type": "main", "index": 0}]]
+      "main": [[]]
     },
     "Devi Affiliate Link Processor": {
       "main": [[
