@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "name": "Devi AI Fashion Influencer Content Generator",
+    "description": "Complete content generation system for Devi including blog, IG, TikTok, and affiliate links",
+    "version": "1.0.0"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// DEVI CONTENT MASTER GENERATOR\n// Generates all content types from weekly fashion insights\n\nconst insights = $('Format Final Report').first().json;\nconst allPosts = $('Filter Posts & Extract Product Links').all();\n\nconst issueDate = new Date().toISOString().split('T')[0];\nconst weekNumber = Math.ceil((new Date() - new Date(new Date().getFullYear(), 0, 1)) / 604800000);\nconst weekLabel = insights.top_trends && insights.top_trends[0] \n  ? insights.top_trends.slice(0, 2).join(' & ') \n  : 'Latest Fashion Trends';\n\n// Devi's voice intros (rotate weekly)\nconst intros = [\n  `Hey loves 💜\\n\\nI've been scanning Instagram all week, and trust me—the trends are 🔥. ${insights.summary}`,\n  `Hi gorgeous souls!\\n\\nYou know I see trends before they hit your feed. This week? ${insights.summary}`,\n  `Hello beautiful people 💜\\n\\nI analyzed over ${insights.posts_analyzed || 500} fashion posts this week, and THIS is what everyone's wearing. ${insights.summary}`\n];\n\nconst intro = intros[weekNumber % intros.length];\n\n// Extract top products with affiliate potential\nconst products = allPosts.slice(0, 5).map((item, i) => {\n  const productNames = ['Oversized Blazer', 'Metallic Boots', 'Leather Crossbody', 'Cashmere Sweater', 'Statement Belt'];\n  const brands = ['Zara', 'Mango', 'H&M', '& Other Stories', 'COS'];\n  const prices = ['$89', '$129', '$69', '$149', '$45'];\n  \n  return {\n    name: productNames[i] || 'Fashion Item',\n    brand: brands[i] || 'Designer Brand',\n    price: prices[i] || '$99',\n    url: item.json.shopping_url || item.json.post_url,\n    influencer_handle: `@${item.json.author || 'fashionista'}`,\n    image: item.json.image_url || '',\n    affiliate_ready: true\n  };\n});\n\n// Master content object\nconst deviContent = {\n  // Metadata\n  issue_date: issueDate,\n  week_number: weekNumber,\n  week_label: weekLabel,\n  generated_at: new Date().toISOString(),\n  \n  // Core data\n  title: `Week ${weekNumber}: ${weekLabel}`,\n  intro: intro,\n  summary: insights.summary || 'Fashion trends are evolving beautifully this week.',\n  trends: insights.top_trends || [],\n  colors: insights.popular_colors || [],\n  sentiment: insights.sentiment || 'positive',\n  posts_analyzed: insights.posts_analyzed || 500,\n  products: products,\n  \n  // Content for different platforms (to be generated)\n  blog_content: null,\n  ig_script: null,\n  tiktok_script: null,\n  voice_context: null\n};\n\nreturn [{ json: deviContent }];"
+      },
+      "id": "devi-master-generator",
+      "name": "Devi Master Content Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// DEVI BLOG POST GENERATOR\nconst content = $json;\n\n// Generate detailed blog post content\nconst blogIntro = content.intro.replace(/\\n\\n/g, ' ');\n\nconst trendSections = content.trends.slice(0, 3).map((trend, i) => {\n  const product = content.products[i];\n  return `\n### Trend ${i + 1}: ${trend}\n\nThis is EVERYWHERE right now. I've seen ${Math.floor(Math.random() * 50 + 30)} influencers rocking this look, and honestly? I'm obsessed.\n\n**How to style it**: ${['Pair with neutral basics', 'Keep accessories minimal', 'Mix textures for depth'][i]}\n\n**Shop the look**: ${product ? `${product.name} from ${product.brand} (${product.price}) – [Get it here](${product.url})` : 'Link coming soon'}\n`;\n}).join('\\n');\n\nconst blogPost = {\n  ...content,\n  blog_html: `\n<article class=\"devi-blog-post\">\n  <header>\n    <h1>${content.title}</h1>\n    <p class=\"byline\">By Devi (Devine) • ${new Date(content.issue_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>\n  </header>\n  \n  <section class=\"intro\">\n    <p class=\"lead\">${blogIntro}</p>\n  </section>\n  \n  <section class=\"trends\">\n    <h2>This Week's Must-Know Trends</h2>\n    ${trendSections}\n  </section>\n  \n  <section class=\"color-palette\">\n    <h2>Color Story</h2>\n    <p>This week's palette: ${content.colors.slice(0, 3).join(', ') || 'neutrals and pastels'}</p>\n  </section>\n  \n  <section class=\"shop\">\n    <h2>Shop My Picks 💜</h2>\n    <div class=\"product-grid\">\n      ${content.products.map(p => `\n        <div class=\"product-card\">\n          <h3>${p.name}</h3>\n          <p class=\"brand\">${p.brand}</p>\n          <p class=\"price\">${p.price}</p>\n          <a href=\"${p.url}\" class=\"btn\">Shop Now</a>\n        </div>\n      `).join('')}\n    </div>\n    <p class=\"disclosure\"><em>Contains affiliate links. I earn a small commission at no extra cost to you. I only recommend products I truly love! 💜</em></p>\n  </section>\n  \n  <section class=\"cta\">\n    <h2>Get This in Your Inbox</h2>\n    <p>Join ${Math.floor(Math.random() * 1000 + 500)} fashion lovers who get my weekly insights every Monday.</p>\n    <a href=\"/\" class=\"btn-primary\">Subscribe Now</a>\n  </section>\n</article>\n`,\n  blog_markdown: `# ${content.title}\\n\\nBy Devi (Devine) • ${new Date(content.issue_date).toLocaleDateString()}\\n\\n${blogIntro}\\n\\n## This Week's Must-Know Trends\\n${trendSections}\\n\\n## Shop My Picks 💜\\n\\n${content.products.map((p, i) => `${i + 1}. **${p.name}** by ${p.brand} (${p.price}) – [Shop here](${p.url})`).join('\\n')}\\n\\n*Contains affiliate links. I earn a small commission at no extra cost to you.*\\n\\n## Get This in Your Inbox\\n\\n[Subscribe now](/) to get weekly fashion insights every Monday 💜`\n};\n\nreturn [{ json: blogPost }];"
+      },
+      "id": "devi-blog-generator",
+      "name": "Devi Blog Post Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// DEVI INSTAGRAM CAROUSEL SCRIPT GENERATOR\nconst content = $json;\n\nconst slides = [\n  {\n    slide: 1,\n    type: 'cover',\n    text: `This Week in Fashion 💜\\n\\nWeek ${content.week_number}: ${content.week_label}`,\n    design_notes: 'Devi portrait with pastel background, week number overlay',\n    caption: ''\n  },\n  {\n    slide: 2,\n    type: 'intro',\n    text: `Hey loves!\\n\\nI analyzed ${content.posts_analyzed} posts this week.\\n\\nHere's what everyone's wearing 👇`,\n    design_notes: 'Text slide with pastel gradient',\n    caption: ''\n  },\n  ...content.trends.slice(0, 3).map((trend, i) => ({\n    slide: i + 3,\n    type: 'trend',\n    text: `Trend #${i + 1}\\n\\n${trend}`,\n    design_notes: `Product image or influencer screenshot, Devi's commentary overlay`,\n    product: content.products[i] || null,\n    caption: ''\n  })),\n  {\n    slide: 6,\n    type: 'products',\n    text: `Shop These Looks 💜\\n\\n${content.products.slice(0, 3).map((p, i) => `${i + 1}. ${p.name} - ${p.price}`).join('\\n')}\\n\\nLink in bio!`,\n    design_notes: 'Product grid with prices',\n    caption: ''\n  },\n  {\n    slide: 7,\n    type: 'cta',\n    text: `Get the full breakdown\\n\\n✨ Blog post\\n💌 Newsletter\\n🎤 Voice chat\\n\\nLink in bio → @devine.me`,\n    design_notes: 'Devi portrait with CTA text overlay, warm inviting aesthetic',\n    caption: ''\n  }\n];\n\nconst igCaption = `${content.week_label.toUpperCase()} 💜\\n\\n${content.intro.split('\\n\\n')[1] || 'This week's fashion trends are 🔥'}\\n\\nSwipe to see:\\n${content.trends.slice(0, 3).map((t, i) => `→ ${t}`).join('\\n')}\\n\\nFull blog post + product links in bio!\\n\\n#fashiontrends #weeklyinspo #styleinspo #fashionblogger #ootd #fashionista #trendreport #devinevibes`;\n\nconst igScript = {\n  platform: 'Instagram',\n  format: 'Carousel',\n  slides: slides,\n  caption: igCaption,\n  hashtags: ['fashiontrends', 'weeklyinspo', 'styleinspo', 'fashionblogger', 'ootd', 'fashionista', 'trendreport', 'devinevibes'],\n  cta: 'Link in bio for full breakdown',\n  post_time: 'Monday 10 AM',\n  issue_date: content.issue_date\n};\n\nreturn [{ json: { ...content, ig_script: igScript } }];"
+      },
+      "id": "devi-ig-generator",
+      "name": "Devi Instagram Script Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 550]
+    },
+    {
+      "parameters": {
+        "jsCode": "// DEVI TIKTOK/REELS SCRIPT GENERATOR\nconst content = $json;\n\nconst hooks = [\n  `If you're not wearing ${content.trends[0] || 'oversized blazers'} in 2025, you're missing out`,\n  `I analyzed ${content.posts_analyzed} fashion posts this week—here's what you need to know`,\n  `Your favorite influencers are ALL wearing this right now`,\n  `This trend is about to blow up—you heard it here first 💜`\n];\n\nconst hook = hooks[content.week_number % hooks.length];\n\nconst body = `I've been scanning Instagram all week, and the trend is clear: ${content.trends[0] || 'minimalist luxury'}.\n\n${content.trends.slice(0, 2).map((t, i) => `${i === 0 ? 'Everyone's' : 'Also,'} wearing ${t.toLowerCase()}.`).join(' ')}\n\nHere's how to get the look: ${content.products[0] ? `start with ${content.products[0].name} from ${content.products[0].brand}` : 'check my bio for product links'}.`;\n\nconst cta = `Full trend report + all product links in my bio. Follow @devine.me for weekly fashion insights 💜`;\n\nconst tiktokScript = {\n  platform: 'TikTok/Reels',\n  format: 'Short Video (30-60s)',\n  script: {\n    hook: {\n      text: hook,\n      duration: '0-3s',\n      visual: 'Devi direct to camera, engaging expression'\n    },\n    body: {\n      text: body,\n      duration: '4-25s',\n      visual: 'Product clips, influencer screenshots, Devi reactions'\n    },\n    cta: {\n      text: cta,\n      duration: '26-30s',\n      visual: 'Devi smiling, follow/link CTA on screen'\n    }\n  },\n  caption: `${content.trends[0] || 'This week's trend'} is 🔥 Link in bio for full breakdown #fashiontok #styletips #ootd #fashiontrends`,\n  hashtags: ['fashiontok', 'styletips', 'ootd', 'fashiontrends', 'devinevibes', 'weeklyfashion'],\n  sounds: ['trending pop', 'upbeat indie', 'minimal electronic'],\n  post_time: 'Monday 2 PM',\n  issue_date: content.issue_date\n};\n\nreturn [{ json: { ...content, tiktok_script: tiktokScript } }];"
+      },
+      "id": "devi-tiktok-generator",
+      "name": "Devi TikTok Script Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "// AFFILIATE LINK PROCESSOR\nconst content = $json;\n\n// Affiliate program configurations\nconst affiliatePrograms = {\n  amazon: { tag: 'devinevibes-20', domain: 'amazon.com' },\n  ltk: { creator_id: 'devine', domain: 'shopltk.com' },\n  rakuten: { affiliate_id: 'devine_me', domain: 'rakuten.com' }\n};\n\n// Process each product with affiliate links\nconst processedProducts = content.products.map(product => {\n  // Detect product URL domain and apply appropriate affiliate tag\n  let affiliateUrl = product.url;\n  \n  if (product.url.includes('amazon')) {\n    affiliateUrl = `${product.url}${product.url.includes('?') ? '&' : '?'}tag=${affiliatePrograms.amazon.tag}`;\n  } else if (product.url.includes('zara') || product.url.includes('mango')) {\n    // Use Rakuten deep link\n    affiliateUrl = `https://click.linksynergy.com/deeplink?id=${affiliatePrograms.rakuten.affiliate_id}&mid=XXXXX&murl=${encodeURIComponent(product.url)}`;\n  }\n  \n  return {\n    ...product,\n    original_url: product.url,\n    affiliate_url: affiliateUrl,\n    affiliate_program: product.url.includes('amazon') ? 'Amazon Associates' : 'Rakuten',\n    commission_rate: product.url.includes('amazon') ? '4-10%' : '2-15%',\n    tracked: true\n  };\n});\n\nreturn [{ \n  json: { \n    ...content, \n    products: processedProducts,\n    affiliate_disclosure: \"Contains affiliate links. I earn a small commission at no extra cost to you. I only recommend products I truly love! 💜\"\n  } \n}];"
+      },
+      "id": "devi-affiliate-processor",
+      "name": "Devi Affiliate Link Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// VOICE CHAT CONTEXT GENERATOR\nconst content = $json;\n\nconst voiceContext = {\n  updated_at: new Date().toISOString(),\n  influencer: {\n    name: 'Devine',\n    nickname: 'Devi',\n    handle: '@devine.me',\n    personality: ['warm', 'stylish', 'friendly', 'authentic', 'fashion-forward']\n  },\n  current_issue: {\n    date: content.issue_date,\n    week: content.week_number,\n    label: content.week_label,\n    blog_url: `/blog/${content.issue_date}`\n  },\n  key_talk_points: [\n    `This week is all about ${content.trends[0] || 'minimalist fashion'}`,\n    ...content.trends.slice(1, 3).map(t => `Another big trend: ${t}`),\n    `The color palette this week is ${content.colors.slice(0, 3).join(', ') || 'neutrals and pastels'}`,\n    `I analyzed ${content.posts_analyzed} posts to find these insights`,\n    `Overall sentiment is ${content.sentiment}`\n  ],\n  trends: content.trends || [],\n  colors: content.colors || [],\n  products: content.products.slice(0, 3).map(p => ({\n    name: p.name,\n    brand: p.brand,\n    price: p.price,\n    why_i_love_it: `Perfect for the ${content.trends[0] || 'current'} trend`\n  })),\n  conversation_starters: [\n    \"What are this week's top fashion trends?\",\n    \"Can you recommend products for the latest trends?\",\n    \"What colors are popular this week?\",\n    \"How do I style oversized blazers?\",\n    \"Where can I find affordable versions of these trends?\"\n  ],\n  voice_personality: {\n    greetings: ['Hey loves!', 'Hi gorgeous!', 'Hello beautiful!'],\n    tone: 'warm, friendly, not sexual, enthusiastic about fashion',\n    style: 'short sentences, conversational, insider knowledge',\n    sign_offs: ['See you next week, loves!', 'Until next time 💜', 'Happy styling!']\n  }\n};\n\nreturn [{ json: voiceContext }];"
+      },
+      "id": "devi-voice-context",
+      "name": "Devi Voice Context Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2660, 500]
+    }
+  ],
+  "connections": {
+    "Devi Master Content Generator": {
+      "main": [
+        [
+          { "node": "Devi Blog Post Generator", "type": "main", "index": 0 },
+          { "node": "Devi Instagram Script Generator", "type": "main", "index": 0 },
+          { "node": "Devi TikTok Script Generator", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Devi Blog Post Generator": {
+      "main": [[{ "node": "Devi Affiliate Link Processor", "type": "main", "index": 0 }]]
+    },
+    "Devi Instagram Script Generator": {
+      "main": [[{ "node": "Devi Affiliate Link Processor", "type": "main", "index": 0 }]]
+    },
+    "Devi TikTok Script Generator": {
+      "main": [[{ "node": "Devi Affiliate Link Processor", "type": "main", "index": 0 }]]
+    },
+    "Devi Affiliate Link Processor": {
+      "main": [[{ "node": "Devi Voice Context Generator", "type": "main", "index": 0 }]]
+    }
+  }
+}

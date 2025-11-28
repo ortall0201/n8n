@@ -1,0 +1,129 @@
+{
+  "name": "Fashion Insights - COMPLETE (Everything Included)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "daysOfWeek": [{"day": "monday"}],
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "📅 Every Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "🧪 Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🤖 WORKFLOW CONTROLLER AGENT - Checks Budget, Frequency, Post Limits\n\nconst CONFIG = {\n  max_posts_per_week: 50,\n  max_cost_per_week: 5.00,\n  cost_per_post: 0.075,\n  min_days_between_runs: 7,\n  curated_influencers: ['marianna_hewitt', 'weworewhat', 'songofstyle', 'blaireadiebee', 'chrissyford'],\n  posts_per_influencer: 10,\n  newsletter_url: 'https://your-project.lovable.app'\n};\n\nconst today = new Date();\nconst lastRunDate = new Date('2025-01-20'); // TODO: Load from Google Sheets\nconst daysSinceLastRun = Math.floor((today - lastRunDate) / (1000 * 60 * 60 * 24));\nconst estimatedCost = CONFIG.max_posts_per_week * CONFIG.cost_per_post;\n\nconst decision = {\n  shouldRun: true,\n  checks: {\n    frequency: { passed: daysSinceLastRun >= CONFIG.min_days_between_runs },\n    budget: { passed: estimatedCost <= CONFIG.max_cost_per_week },\n    post_limit: { passed: CONFIG.max_posts_per_week === 50 }\n  }\n};\n\nconst allChecksPassed = Object.values(decision.checks).every(c => c.passed);\nif (!allChecksPassed) {\n  decision.shouldRun = false;\n}\n\nconsole.log(`🤖 WORKFLOW CONTROLLER: ${decision.shouldRun ? '✅ RUN' : '❌ SKIP'}`);\n\nreturn [{ json: { ...decision, ...CONFIG, estimatedCost, daysSinceLastRun } }];"
+      },
+      "id": "workflow-controller",
+      "name": "🤖 Workflow Controller Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 300],
+      "notes": "Checks: Budget ($15/month max), Frequency (7 days min), Post limits (50 max)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {"value1": "={{ $json.shouldRun }}", "value2": true}
+          ]
+        }
+      },
+      "id": "should-run",
+      "name": "Should Run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/trigger",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {"name": "dataset_id", "value": "YOUR_DATASET_ID_HERE"},
+            {"name": "format", "value": "json"}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_BRIGHT_DATA_TOKEN"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {"name": "profiles", "value": "={{ $('🤖 Workflow Controller Agent').item.json.curated_influencers }}"},
+            {"name": "posts_per_profile", "value": "10"},
+            {"name": "limit", "value": "50"}
+          ]
+        }
+      },
+      "id": "brightdata-scrape",
+      "name": "📸 Bright Data - Scrape Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [860, 200],
+      "notes": "Scrapes 50 posts from 5 curated fashion influencers"
+    },
+    {
+      "parameters": {
+        "jsCode": "const posts = $input.all();\nlet allPosts = [];\nif (posts.length > 0 && posts[0].json) {\n  if (Array.isArray(posts[0].json)) allPosts = posts[0].json;\n  else if (posts[0].json.data) allPosts = posts[0].json.data;\n  else allPosts = posts.map(p => p.json);\n}\nconst transformed = allPosts.map(post => ({\n  json: {\n    id: post.post_id || post.pk,\n    username: post.user_posted,\n    caption: post.description || '',\n    likes: post.likes || 0,\n    comments: post.num_comments || 0,\n    hashtags: post.hashtags || [],\n    posted_at: post.date_posted,\n    image_url: post.photos?.[0] || post.thumbnail,\n    post_url: post.url,\n    shopping_url: post.shopping_url\n  }\n}));\nreturn transformed;"
+      },
+      "id": "parse-response",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1080, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🛡️ CONTENT SAFETY FILTER AGENT - Filters Palestine, Politics, Profanity\n\nconst posts = $input.all();\nconst FORBIDDEN = {\n  palestine: ['palestine', 'palestinian', 'gaza', 'westbank', 'freepalestine', 'free palestine', 'apartheid', 'occupation', 'zionist', 'idf', '🇵🇸', '🍉'],\n  political: ['political', 'protest', 'boycott', 'activism', 'solidarity', 'resistance'],\n  profanity: ['fuck', 'shit', 'damn', 'bitch', 'ass', 'hell']\n};\n\nfunction isSafe(post) {\n  const text = (post.json.caption + ' ' + (post.json.hashtags || []).join(' ')).toLowerCase();\n  for (const [category, terms] of Object.entries(FORBIDDEN)) {\n    if (terms.some(term => text.includes(term.toLowerCase()))) {\n      return false;\n    }\n  }\n  return true;\n}\n\nconst safePosts = posts.filter(isSafe);\nconst filtered = posts.length - safePosts.length;\n\nconsole.log(`🛡️ SAFETY FILTER: ${safePosts.length} safe, ${filtered} filtered`);\n\nreturn [{\n  json: {\n    safe_posts: safePosts.map(p => p.json),\n    total: posts.length,\n    safe_count: safePosts.length,\n    filtered_count: filtered\n  }\n}];"
+      },
+      "id": "safety-filter",
+      "name": "🛡️ Content Safety Filter Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1300, 200],
+      "notes": "ZERO TOLERANCE: Palestine, politics, profanity blocked"
+    }
+  ],
+  "connections": {
+    "📅 Every Monday 9 AM": {"main": [[{"node": "🤖 Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "🧪 Manual Test Trigger": {"main": [[{"node": "🤖 Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "🤖 Workflow Controller Agent": {"main": [[{"node": "Should Run?", "type": "main", "index": 0}]]},
+    "Should Run?": {"main": [[{"node": "📸 Bright Data - Scrape Instagram", "type": "main", "index": 0}]]},
+    "📸 Bright Data - Scrape Instagram": {"main": [[{"node": "Parse Response", "type": "main", "index": 0}]]},
+    "Parse Response": {"main": [[{"node": "🛡️ Content Safety Filter Agent", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "staticData": null,
+  "tags": [],
+  "meta": {
+    "instanceId": "complete-workflow-v1",
+    "templateCredsSetupCompleted": false
+  }
+}

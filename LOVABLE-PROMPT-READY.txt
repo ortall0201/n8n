@@ -1,0 +1,91 @@
+Create an ultra-modern, animated landing page for "Fashion Insights" - an AI-powered weekly fashion newsletter.
+
+HERO SECTION:
+- Full-screen animated gradient background (purple #667eea to #764ba2)
+- Floating fashion icons animation (👗 👠 👜 💄 👔 animations)
+- Large heading: "📸 Fashion Insights"
+- Subheading: "Get weekly AI-powered fashion trends from top influencers delivered to your inbox"
+- Glassmorphic signup form centered with:
+  * Email input field with label "Email Address *"
+  * Name input field with label "Your Name (optional)"
+  * Large animated submit button "Get Weekly Fashion Insights ✨"
+  * Form must POST to: http://localhost:5678/webhook/newsletter-signup
+  * Small text below: "Join 1,000+ fashion lovers • No spam, ever"
+
+FEATURES SECTION:
+- White background with padding
+- Section title: "What You'll Get Every Week"
+- 3x2 grid of feature cards
+- Each card has:
+  * Large emoji icon (48px)
+  * Title (bold, 24px)
+  * Description paragraph
+  * Hover effect: lift up 5px + add shadow
+  * Smooth transitions
+- Features:
+  1. 🔥 Top 5 Trends
+     "AI-analyzed trends from 8 top fashion influencers, delivered weekly with actionable insights."
+  2. 🛍️ Shop the Looks
+     "Direct links to products and brands mentioned by influencers, with exclusive discount codes."
+  3. 🎨 Color & Style Insights
+     "Popular colors, key brands, and rising hashtags analyzed from thousands of fashion posts."
+  4. 📸 Featured Posts
+     "Curated Instagram posts with stunning fashion inspiration from leading style icons."
+  5. 💡 Business Recommendations
+     "Actionable tips for fashion brands, retailers, and entrepreneurs based on trend analysis."
+  6. 🤖 AI-Powered
+     "Advanced AI analyzes 40-64 posts weekly to give you the most relevant fashion intelligence."
+
+SOCIAL PROOF SECTION:
+- Light gray background
+- Section title: "Trusted by Fashion Lovers"
+- 3 stat boxes in a row:
+  * Stat 1: "1,000+" in large purple text, "Active Subscribers" below
+  * Stat 2: "8" in large purple text, "Top Influencers Tracked" below
+  * Stat 3: "50+" in large purple text, "Posts Analyzed Weekly" below
+- Animate counters on scroll (count up effect)
+
+FINAL CTA SECTION:
+- Purple gradient background (reverse: #764ba2 to #667eea)
+- White text
+- Section title: "Ready to Stay Ahead of Fashion Trends?"
+- Subtitle: "Join our community and never miss a trend again"
+- Duplicate signup form (same as hero, white background)
+
+FOOTER:
+- Dark gray background (#1f2937)
+- Centered content
+- "Fashion Insights • Curated by Ortal"
+- Link to: ortal@onsight-analytics.com (purple color)
+- Small text: "AI-powered fashion trend analysis • Weekly newsletter • No spam, ever"
+- Copyright: "© 2025 Fashion Insights. All rights reserved."
+
+ANIMATIONS & EFFECTS:
+- Fade-in on scroll for all sections
+- Parallax effect on hero section
+- Smooth scroll between sections
+- Button hover: lift up + glow effect
+- Card hover: lift up + shadow
+- Floating icon animations in hero
+- Counter animation in stats section
+- Form input focus: purple border glow
+
+TECHNICAL:
+- Fully mobile responsive
+- Fast loading
+- Clean, modern design
+- Professional typography (Inter font)
+- Smooth transitions everywhere (0.3s ease)
+- Form validation (email required)
+- Form method: POST
+- Form action: http://localhost:5678/webhook/newsletter-signup
+
+STYLE THEME:
+- Primary color: #667eea (purple)
+- Secondary color: #764ba2 (darker purple)
+- Text: #333 (dark gray)
+- Background: white and light gray alternating
+- Accents: Purple gradient
+- Modern, minimalist, fashion-focused aesthetic
+- Lots of whitespace
+- Large, bold typography

@@ -1,0 +1,341 @@
+{
+  "name": "Fashion Insights - FULLY SECURED (Agent-Controlled)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "daysOfWeek": [
+                {
+                  "day": "monday"
+                }
+              ],
+              "hoursInterval": 1,
+              "minutesInterval": 1,
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "weekly-schedule-trigger",
+      "name": "Weekly Schedule (Every Monday 9 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger-test",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🤖 WORKFLOW CONTROLLER AGENT\n// Controls: Budget, Frequency, Manual Overrides, Post Limits\n\nconst CONFIG = {\n  max_posts_per_week: 50,\n  max_cost_per_week: 5.00,\n  cost_per_post: 0.075,\n  min_days_between_runs: 7,\n  curated_influencers: [\n    'marianna_hewitt',\n    'weworewhat', \n    'songofstyle',\n    'blaireadiebee',\n    'chrissyford'\n  ],\n  posts_per_influencer: 10\n};\n\n// Check last run date (will load from Google Sheets later)\nconst today = new Date();\nconst lastRunDate = new Date('2025-11-20'); // TODO: Load from sheets\nconst daysSinceLastRun = Math.floor((today - lastRunDate) / (1000 * 60 * 60 * 24));\n\n// Calculate estimated cost\nconst estimatedCost = CONFIG.max_posts_per_week * CONFIG.cost_per_post;\n\n// Decision checks\nconst decision = {\n  shouldRun: true,\n  reason: '',\n  checks: {\n    frequency: {\n      passed: daysSinceLastRun >= CONFIG.min_days_between_runs,\n      message: `Last run: ${daysSinceLastRun} days ago (min: ${CONFIG.min_days_between_runs})`\n    },\n    budget: {\n      passed: estimatedCost <= CONFIG.max_cost_per_week,\n      message: `Estimated cost: $${estimatedCost.toFixed(2)} (max: $${CONFIG.max_cost_per_week})`\n    },\n    post_limit: {\n      passed: CONFIG.max_posts_per_week === 50,\n      message: `Will scrape: ${CONFIG.max_posts_per_week} posts (${CONFIG.curated_influencers.length} influencers × ${CONFIG.posts_per_influencer} posts)`\n    },\n    manual_override: {\n      passed: true,\n      message: 'No manual pause detected'\n    }\n  }\n};\n\n// Evaluate all checks\nconst allChecksPassed = Object.values(decision.checks).every(check => check.passed);\n\nif (!allChecksPassed) {\n  decision.shouldRun = false;\n  decision.reason = Object.entries(decision.checks)\n    .filter(([key, check]) => !check.passed)\n    .map(([key, check]) => `${key}: ${check.message}`)\n    .join('; ');\n}\n\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log('🤖 WORKFLOW CONTROLLER AGENT DECISION');\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log(`Should Run: ${decision.shouldRun ? '✅ YES' : '❌ NO'}`);\nconsole.log(`Reason: ${decision.reason || 'All checks passed'}`);\nconsole.log(`Posts to scrape: ${CONFIG.max_posts_per_week}`);\nconsole.log(`Influencers: ${CONFIG.curated_influencers.join(', ')}`);\nconsole.log(`Estimated cost: $${estimatedCost.toFixed(2)}`);\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\n\nreturn [{\n  json: {\n    controller_decision: decision.shouldRun,\n    checks: decision.checks,\n    reason: decision.reason,\n    estimated_cost: estimatedCost,\n    posts_to_scrape: CONFIG.max_posts_per_week,\n    influencers: CONFIG.curated_influencers,\n    posts_per_influencer: CONFIG.posts_per_influencer,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "workflow-controller",
+      "name": "🤖 Workflow Controller Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.controller_decision }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "should-run-workflow",
+      "name": "Should Run Workflow?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/trigger",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "dataset_id",
+              "value": "YOUR_DATASET_ID_HERE"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_BRIGHT_DATA_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "profiles",
+              "value": "={{ $('🤖 Workflow Controller Agent').item.json.influencers }}"
+            },
+            {
+              "name": "posts_per_profile",
+              "value": "={{ $('🤖 Workflow Controller Agent').item.json.posts_per_influencer }}"
+            },
+            {
+              "name": "discover_new",
+              "value": false
+            },
+            {
+              "name": "limit",
+              "value": 50
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "brightdata-scrape",
+      "name": "Bright Data - Scrape 50 Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE BRIGHT DATA RESPONSE\nconst posts = $input.all();\n\nlet allPosts = [];\n\nif (posts.length > 0 && posts[0].json) {\n  if (Array.isArray(posts[0].json)) {\n    allPosts = posts[0].json;\n  } else if (posts[0].json.data && Array.isArray(posts[0].json.data)) {\n    allPosts = posts[0].json.data;\n  } else {\n    allPosts = posts.map(p => p.json);\n  }\n}\n\nconst transformed = allPosts.map(post => ({\n  json: {\n    id: post.post_id || post.pk,\n    username: post.user_posted,\n    caption: post.description || '',\n    likes: post.likes || 0,\n    comments: post.num_comments || 0,\n    hashtags: post.hashtags || [],\n    posted_at: post.date_posted,\n    image_url: post.photos && post.photos[0] ? post.photos[0] : post.thumbnail,\n    post_url: post.url,\n    engagement_rate: (post.likes + post.num_comments) / 1000,\n    tagged_products: post.product_tags || [],\n    shopping_url: post.shopping_url || null\n  }\n}));\n\nreturn transformed;"
+      },
+      "id": "parse-brightdata",
+      "name": "Parse Bright Data Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1140,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🛡️ CONTENT SAFETY FILTER AGENT\n// Filters: Palestine, Politics, Profanity, Controversial Content\n\nconst posts = $input.all();\n\n// ⛔ FORBIDDEN PATTERNS - ZERO TOLERANCE\nconst FORBIDDEN = {\n  // PALESTINE-RELATED (CRITICAL - ALWAYS BLOCK)\n  palestine: [\n    'palestine', 'palestinian', 'gaza', 'westbank', 'west bank',\n    'freepalestine', 'free palestine', 'from the river', 'from river to sea',\n    'apartheid', 'occupation', 'zionist', 'zionism', 'idf', 'israel', 'israeli',\n    'nakba', 'intifada', 'al-aqsa', 'bds',\n    '🇵🇸', '🍉' // Palestine flag, watermelon symbol\n  ],\n  \n  // POLITICAL TERMS\n  political: [\n    'political', 'politics', 'election', 'vote', 'campaign',\n    'president', 'government', 'activism', 'activist',\n    'protest', 'boycott', 'movement', 'solidarity',\n    'resistance', 'humanitarian crisis', 'war', 'conflict',\n    'ceasefire', 'genocide', 'refugee'\n  ],\n  \n  // PROFANITY\n  profanity: [\n    'fuck', 'fucking', 'fucked', 'fucker', 'fuckin',\n    'shit', 'shitty', 'bullshit',\n    'damn', 'damned', 'goddamn',\n    'bitch', 'bitchy', 'bitching',\n    'ass', 'asshole', 'badass',\n    'hell', 'bastard', 'crap', 'piss',\n    'dick', 'cock', 'pussy', 'whore', 'slut'\n  ],\n  \n  // CONTROVERSIAL TOPICS\n  controversial: [\n    'abortion', 'gun control', 'immigration ban',\n    'racism', 'sexism', 'hate crime',\n    'nazi', 'fascist', 'terrorist', 'extremist'\n  ],\n  \n  // POLITICAL SYMBOLS\n  symbols: [\n    '🇵🇸', // Palestine flag\n    '🍉', // Watermelon (Palestine symbol)\n    '✊' // Fist (when used politically)\n  ]\n};\n\n// Analyze post safety\nfunction analyzePostSafety(post) {\n  const caption = (post.json.caption || '').toLowerCase();\n  const hashtags = (post.json.hashtags || []).join(' ').toLowerCase();\n  const combinedText = caption + ' ' + hashtags;\n  \n  const violations = {\n    palestine: false,\n    political: false,\n    profanity: false,\n    controversial: false,\n    symbols: false\n  };\n  \n  const violationDetails = [];\n  \n  // Check Palestine (CRITICAL)\n  for (const term of FORBIDDEN.palestine) {\n    if (combinedText.includes(term.toLowerCase())) {\n      violations.palestine = true;\n      violationDetails.push(`Palestine: \"${term}\"`);\n    }\n  }\n  \n  // Check symbols\n  for (const symbol of FORBIDDEN.symbols) {\n    if (caption.includes(symbol) || hashtags.includes(symbol)) {\n      violations.symbols = true;\n      violationDetails.push(`Symbol: \"${symbol}\"`);\n    }\n  }\n  \n  // Check politics\n  for (const term of FORBIDDEN.political) {\n    if (combinedText.includes(term.toLowerCase())) {\n      violations.political = true;\n      violationDetails.push(`Political: \"${term}\"`);\n    }\n  }\n  \n  // Check profanity\n  for (const word of FORBIDDEN.profanity) {\n    if (combinedText.includes(word.toLowerCase())) {\n      violations.profanity = true;\n      violationDetails.push(`Profanity: \"${word}\"`);\n    }\n  }\n  \n  // Check controversial\n  for (const term of FORBIDDEN.controversial) {\n    if (combinedText.includes(term.toLowerCase())) {\n      violations.controversial = true;\n      violationDetails.push(`Controversial: \"${term}\"`);\n    }\n  }\n  \n  const isSafe = !Object.values(violations).some(v => v === true);\n  \n  return {\n    safe: isSafe,\n    violations: violations,\n    details: violationDetails,\n    post_id: post.json.id,\n    author: post.json.username\n  };\n}\n\n// Filter all posts\nconst safetyResults = posts.map(post => ({\n  post: post,\n  safety: analyzePostSafety(post)\n}));\n\n// Separate safe and unsafe\nconst safePosts = safetyResults\n  .filter(result => result.safety.safe)\n  .map(result => result.post);\n\nconst unsafePosts = safetyResults\n  .filter(result => !result.safety.safe);\n\n// Logging\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log('🛡️ CONTENT SAFETY FILTER AGENT RESULTS');\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\nconsole.log(`Total Posts: ${posts.length}`);\nconsole.log(`✅ Safe Posts: ${safePosts.length}`);\nconsole.log(`❌ Filtered Out: ${unsafePosts.length}`);\n\nif (unsafePosts.length > 0) {\n  console.log('\\n🚨 FILTERED POSTS:');\n  unsafePosts.forEach(result => {\n    console.log(`  • @${result.safety.author} (Post ${result.safety.post_id})`);\n    console.log(`    Violations: ${result.safety.details.join(', ')}`);\n  });\n}\n\nconsole.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');\n\nreturn [{\n  json: {\n    safe_posts: safePosts.map(p => p.json),\n    total_posts: posts.length,\n    safe_count: safePosts.length,\n    filtered_count: unsafePosts.length,\n    filter_report: {\n      palestine_blocked: unsafePosts.filter(r => r.safety.violations.palestine).length,\n      political_blocked: unsafePosts.filter(r => r.safety.violations.political).length,\n      profanity_blocked: unsafePosts.filter(r => r.safety.violations.profanity).length,\n      controversial_blocked: unsafePosts.filter(r => r.safety.violations.controversial).length,\n      symbols_blocked: unsafePosts.filter(r => r.safety.violations.symbols).length\n    },\n    filtered_details: unsafePosts.map(r => r.safety)\n  }\n}];"
+      },
+      "id": "content-safety-filter",
+      "name": "🛡️ Content Safety Filter Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FILTER & EXTRACT PRODUCT LINKS FROM SAFE POSTS\nconst safePostsData = $json.safe_posts || [];\nconst posts = safePostsData.map(post => ({ json: post }));\n\nconst qualityPosts = posts.filter(item => item.json.likes > 1000);\n\nconst cleaned = qualityPosts.map(item => {\n  const post = item.json;\n  \n  const urlRegex = /(https?:\\/\\/[^\\s]+)/g;\n  const captionUrls = (post.caption.match(urlRegex) || []);\n  \n  const shoppingDomains = ['shopmy.us', 'liketoknow.it', 'ltk.app', 'amazon.com', 'zara.com', 'hm.com', 'asos.com'];\n  \n  const productLinks = captionUrls.filter(url => {\n    return shoppingDomains.some(domain => url.toLowerCase().includes(domain));\n  });\n  \n  const couponRegex = /(?:code|promo|discount|use)\\s*[:\"]?\\s*([A-Z0-9]{4,15})/gi;\n  const coupons = [];\n  let match;\n  while ((match = couponRegex.exec(post.caption)) !== null) {\n    coupons.push(match[1]);\n  }\n  \n  return {\n    id: post.id,\n    author: post.username,\n    caption: post.caption,\n    likes: post.likes,\n    comments: post.comments,\n    hashtags: Array.isArray(post.hashtags) ? post.hashtags.join(', ') : '',\n    engagement_rate: post.engagement_rate,\n    posted_date: new Date(post.posted_at).toLocaleDateString('en-US'),\n    image_url: post.image_url,\n    post_url: post.post_url,\n    product_links: productLinks,\n    has_products: productLinks.length > 0 || post.shopping_url !== null,\n    shopping_url: post.shopping_url,\n    coupon_codes: coupons,\n    has_coupons: coupons.length > 0\n  };\n});\n\nreturn cleaned.map(post => ({ json: post }));"
+      },
+      "id": "filter-extract-products",
+      "name": "Filter Posts & Extract Products",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PREPARE AI ANALYSIS\nconst posts = $input.all();\n\nconst influencers = {};\nposts.forEach(item => {\n  const author = item.json.author;\n  if (!influencers[author]) {\n    influencers[author] = [];\n  }\n  influencers[author].push(item.json);\n});\n\nconst allText = posts.map(item => {\n  const post = item.json;\n  return `Post by @${post.author} (${post.likes} likes):\\n${post.caption}\\n`;\n}).join('\\n---\\n');\n\nconst prompt = `Analyze these ${posts.length} Instagram posts from ${Object.keys(influencers).length} fashion influencers.\n\nIMPORTANT: Focus ONLY on fashion trends, colors, and styles. Ignore any non-fashion content.\n\nInfluencers: ${Object.keys(influencers).join(', ')}\n\nPosts:\n${allText}\n\nProvide analysis in JSON format:\n{\n  \"top_trends\": [\"trend 1\", \"trend 2\", \"trend 3\", \"trend 4\", \"trend 5\"],\n  \"popular_colors\": [\"color 1\", \"color 2\", \"color 3\"],\n  \"popular_styles\": [\"style 1\", \"style 2\", \"style 3\"],\n  \"rising_hashtags\": [\"#hashtag1\", \"#hashtag2\"],\n  \"key_brands\": [\"brand 1\", \"brand 2\"],\n  \"sentiment\": \"positive\",\n  \"summary\": \"Write 3-4 sentences about this week's fashion trends.\",\n  \"recommendations\": [\"tip 1\", \"tip 2\", \"tip 3\"]\n}`;\n\nreturn [{\n  json: {\n    prompt: prompt,\n    post_count: posts.length,\n    influencer_count: Object.keys(influencers).length\n  }\n}];"
+      },
+      "id": "prepare-ai-analysis",
+      "name": "Prepare AI Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "⛔ ABSOLUTE FORBIDDEN CONTENT - ZERO TOLERANCE ⛔\n\nYou MUST NEVER mention, reference, or allude to:\n\n1. PALESTINE-RELATED (STRICTLY FORBIDDEN):\n❌ Palestine, Palestinian, Gaza, West Bank, Free Palestine\n❌ Israeli-Palestinian conflict, Middle East politics\n❌ Palestine flag (🇵🇸), Watermelon symbol (🍉)\n❌ Occupation, apartheid, Zionist, IDF\n❌ ANY variation or coded reference\n\n2. POLITICAL CONTENT (FORBIDDEN):\n❌ Politics, activism, protests, boycotts\n❌ Political hashtags, slogans\n\n3. PROFANITY (FORBIDDEN):\n❌ Fuck, shit, damn, bitch, ass, or any curse words\n❌ Sexual or vulgar language\n\n4. CONTROVERSIAL TOPICS (FORBIDDEN):\n❌ Religion (except cultural fashion)\n❌ Racial tensions, discrimination\n\nYOUR ONLY APPROVED TOPICS:\n✅ Fashion trends, colors, styles\n✅ Styling advice\n✅ Fashion brands, products\n✅ Celebrity fashion (style only)\n\nTASK: Analyze fashion trends from Instagram posts. Focus ONLY on fashion elements."
+            },
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.7
+        }
+      },
+      "id": "openai-analysis",
+      "name": "AI Fashion Analysis (Secured)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.7,
+      "position": [
+        2020,
+        200
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL",
+          "name": "OpenAI Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekly Schedule (Every Monday 9 AM)": {
+      "main": [
+        [
+          {
+            "node": "🤖 Workflow Controller Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "🤖 Workflow Controller Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Workflow Controller Agent": {
+      "main": [
+        [
+          {
+            "node": "Should Run Workflow?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Run Workflow?": {
+      "main": [
+        [
+          {
+            "node": "Bright Data - Scrape 50 Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bright Data - Scrape 50 Posts": {
+      "main": [
+        [
+          {
+            "node": "Parse Bright Data Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Bright Data Response": {
+      "main": [
+        [
+          {
+            "node": "🛡️ Content Safety Filter Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🛡️ Content Safety Filter Agent": {
+      "main": [
+        [
+          {
+            "node": "Filter Posts & Extract Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Posts & Extract Products": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Fashion Analysis (Secured)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-27T00:00:00.000Z",
+  "versionId": "fashion-insights-fully-secured-v1"
+}

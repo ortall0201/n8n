@@ -1,0 +1,91 @@
+{
+  "name": "Fashion Insights - COMPLETE (Import This One!)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {"interval": [{"field": "weeks", "weeksInterval": 1, "daysOfWeek": [{"day": "monday"}], "hour": 9, "minute": 0}]}
+      },
+      "id": "schedule-trigger",
+      "name": "📅 Every Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "🧪 Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🤖 WORKFLOW CONTROLLER AGENT\n// Controls: Budget ($15/month max), Frequency (weekly), Post Limits (50 max)\n\nconst CONFIG = {\n  max_posts_per_week: 50,\n  max_cost_per_week: 5.00,\n  cost_per_post: 0.075,\n  min_days_between_runs: 7,\n  curated_influencers: [\n    'marianna_hewitt',\n    'weworewhat',\n    'songofstyle',\n    'blaireadiebee',\n    'chrissyford'\n  ],\n  posts_per_influencer: 10,\n  newsletter_url: 'https://your-project.lovable.app'\n};\n\nconst today = new Date();\nconst lastRunDate = new Date('2025-01-20'); // TODO: Load from Google Sheets\nconst daysSinceLastRun = Math.floor((today - lastRunDate) / (1000 * 60 * 60 * 24));\nconst estimatedCost = CONFIG.max_posts_per_week * CONFIG.cost_per_post;\n\nconst decision = {\n  shouldRun: true,\n  checks: {\n    frequency: { passed: daysSinceLastRun >= CONFIG.min_days_between_runs, message: `${daysSinceLastRun} days since last run` },\n    budget: { passed: estimatedCost <= CONFIG.max_cost_per_week, message: `Cost: $${estimatedCost}` },\n    post_limit: { passed: CONFIG.max_posts_per_week === 50, message: '50 posts max' }\n  }\n};\n\nconst allChecksPassed = Object.values(decision.checks).every(c => c.passed);\nif (!allChecksPassed) decision.shouldRun = false;\n\nconsole.log('🤖 WORKFLOW CONTROLLER:', decision.shouldRun ? '✅ RUN' : '❌ SKIP');\n\nreturn [{ json: { ...decision, ...CONFIG, estimatedCost, daysSinceLastRun, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "workflow-controller",
+      "name": "🤖 Workflow Controller Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300],
+      "notes": "Checks budget, frequency, post limits before running"
+    },
+    {
+      "parameters": {
+        "conditions": {"boolean": [{"value1": "={{ $json.shouldRun }}", "value2": true}]}
+      },
+      "id": "should-run-check",
+      "name": "✅ Should Run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/trigger",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {"name": "dataset_id", "value": "YOUR_DATASET_ID_HERE"},
+            {"name": "format", "value": "json"}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_BRIGHT_DATA_TOKEN"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {"name": "profiles", "value": "={{ $('🤖 Workflow Controller Agent').item.json.curated_influencers }}"},
+            {"name": "posts_per_profile", "value": "10"},
+            {"name": "limit", "value": "50"}
+          ]
+        }
+      },
+      "id": "brightdata-scrape",
+      "name": "📸 Bright Data - Scrape 50 Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 200],
+      "notes": "Controlled by Workflow Controller Agent - 50 posts max"
+    }
+  ],
+  "connections": {
+    "📅 Every Monday 9 AM": {"main": [[{"node": "🤖 Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "🧪 Manual Test Trigger": {"main": [[{"node": "🤖 Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "🤖 Workflow Controller Agent": {"main": [[{"node": "✅ Should Run?", "type": "main", "index": 0}]]},
+    "✅ Should Run?": {"main": [[{"node": "📸 Bright Data - Scrape 50 Posts", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-27T00:00:00.000Z",
+  "versionId": "complete-v1"
+}

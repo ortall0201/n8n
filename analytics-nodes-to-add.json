@@ -1,0 +1,227 @@
+{
+  "name": "Analytics Tracking Nodes (Add to Main Workflow)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// PREPARE LINKS FOR BITLY SHORTENING WITH UTM TRACKING\nconst content = $('Devi Affiliate Processor').first().json;\nconst weekNumber = content.week_number;\nconst issueDate = content.issue_date;\n\n// Your Lovable landing page URL (UPDATE THIS!)\nconst LANDING_PAGE_URL = 'https://your-project.lovable.app';\n\n// Create array of all links to track\nconst linksToShorten = [];\n\n// 1. Add affiliate product links\ncontent.products.forEach((product, index) => {\n  const productSlug = product.name.toLowerCase().replace(/\\s+/g, '_').replace(/[^a-z0-9_]/g, '');\n  \n  linksToShorten.push({\n    id: `product_${index}`,\n    type: 'affiliate',\n    product_name: product.name,\n    product_brand: product.brand,\n    original_url: product.affiliate_url || product.url,\n    utm_source: 'newsletter',\n    utm_medium: 'email',\n    utm_campaign: `week_${weekNumber}`,\n    utm_content: productSlug,\n    week_number: weekNumber,\n    issue_date: issueDate\n  });\n});\n\n// 2. Add voice chatbot button link\nlinksToShorten.push({\n  id: 'voice_chatbot_button',\n  type: 'voice_chat',\n  product_name: 'Voice Chat CTA Button',\n  original_url: LANDING_PAGE_URL,\n  utm_source: 'newsletter',\n  utm_medium: 'email',\n  utm_campaign: `week_${weekNumber}`,\n  utm_content: 'voice_chat_button',\n  week_number: weekNumber,\n  issue_date: issueDate\n});\n\n// 3. Add newsletter signup link (for email forwarding)\nlinksToShorten.push({\n  id: 'newsletter_signup_forward',\n  type: 'signup',\n  product_name: 'Newsletter Signup (Forward)',\n  original_url: LANDING_PAGE_URL,\n  utm_source: 'newsletter_forward',\n  utm_medium: 'email',\n  utm_campaign: `week_${weekNumber}`,\n  utm_content: 'forward_subscribe',\n  week_number: weekNumber,\n  issue_date: issueDate\n});\n\n// 4. Add blog post link\nlinksToShorten.push({\n  id: 'blog_post_link',\n  type: 'blog',\n  product_name: 'Blog Post Link',\n  original_url: LANDING_PAGE_URL,\n  utm_source: 'newsletter',\n  utm_medium: 'email',\n  utm_campaign: `week_${weekNumber}`,\n  utm_content: 'blog_post_cta',\n  week_number: weekNumber,\n  issue_date: issueDate\n});\n\n// Build full URLs with UTM parameters\nconst result = linksToShorten.map(link => {\n  const separator = link.original_url.includes('?') ? '&' : '?';\n  const utmParams = `utm_source=${link.utm_source}&utm_medium=${link.utm_medium}&utm_campaign=${link.utm_campaign}&utm_content=${link.utm_content}`;\n  \n  return {\n    json: {\n      ...link,\n      long_url: `${link.original_url}${separator}${utmParams}`,\n      bitly_title: `${link.product_name} - Week ${weekNumber}`\n    }\n  };\n});\n\nconsole.log(`Prepared ${result.length} links for shortening`);\nreturn result;"
+      },
+      "id": "prepare-bitly-links",
+      "name": "Prepare Links for Bitly + UTM",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 500],
+      "notes": "Creates trackable links with UTM parameters for all products, voice chat button, and newsletter CTAs"
+    },
+    {
+      "parameters": {
+        "url": "https://api-ssl.bitly.com/v4/shorten",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_BITLY_ACCESS_TOKEN_HERE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"long_url\": \"{{ $json.long_url }}\",\n  \"domain\": \"bit.ly\",\n  \"title\": \"{{ $json.bitly_title }}\"\n}",
+        "options": {}
+      },
+      "id": "bitly-shorten-links",
+      "name": "Bitly - Shorten Links",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 500],
+      "notes": "Calls Bitly API to shorten each link. Returns bit.ly short URL."
+    },
+    {
+      "parameters": {
+        "jsCode": "// AGGREGATE SHORTENED LINKS BACK TO CONTENT\nconst shortenedLinks = $input.all();\nconst originalContent = $('Devi Affiliate Processor').first().json;\n\nconsole.log(`Processing ${shortenedLinks.length} shortened links`);\n\n// Create lookup map: id -> short_url\nconst linkMap = {};\nshortenedLinks.forEach(item => {\n  const id = item.json.id;\n  const shortUrl = item.json.link || item.json.short_url || item.json.long_url; // fallback to original if Bitly fails\n  linkMap[id] = shortUrl;\n  console.log(`Mapped ${id} -> ${shortUrl}`);\n});\n\n// Update products with shortened links\nconst updatedProducts = originalContent.products.map((product, index) => {\n  const shortLink = linkMap[`product_${index}`];\n  return {\n    ...product,\n    short_link: shortLink || product.affiliate_url, // fallback to original\n    tracking_enabled: !!shortLink,\n    original_affiliate_url: product.affiliate_url\n  };\n});\n\n// Extract other tracked links\nconst voiceChatLink = linkMap['voice_chatbot_button'];\nconst newsletterSignupLink = linkMap['newsletter_signup_forward'];\nconst blogPostLink = linkMap['blog_post_link'];\n\n// Store all tracking data\nconst trackingData = shortenedLinks.map(item => ({\n  link_id: item.json.id,\n  link_type: item.json.type,\n  product_name: item.json.product_name,\n  short_url: item.json.link || item.json.short_url,\n  long_url: item.json.long_url,\n  week_number: item.json.week_number,\n  issue_date: item.json.issue_date,\n  created_at: new Date().toISOString()\n}));\n\nreturn [{\n  json: {\n    ...originalContent,\n    products: updatedProducts,\n    voice_chat_link: voiceChatLink || 'https://your-project.lovable.app',\n    newsletter_signup_link: newsletterSignupLink || 'https://your-project.lovable.app',\n    blog_post_link: blogPostLink || 'https://your-project.lovable.app',\n    tracking_data: trackingData,\n    tracking_enabled: true\n  }\n}];"
+      },
+      "id": "aggregate-shortened-links",
+      "name": "Aggregate Shortened Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2880, 500],
+      "notes": "Maps shortened Bitly URLs back to products and content"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LOG NEWSLETTER STATS TO GOOGLE SHEETS\nconst content = $('Aggregate Shortened Links').first().json;\nconst subscribers = $('Filter Active Subscribers').all();\n\nconst weekNumber = content.week_number;\nconst issueDate = content.issue_date;\nconst emailsSent = subscribers.length;\n\n// Prepare Overview row\nconst overviewRow = {\n  week_number: weekNumber,\n  issue_date: issueDate,\n  emails_sent: emailsSent,\n  open_rate: 'Pending', // Will be updated from Mailjet later\n  total_clicks: 0, // Will be updated from Bitly API later\n  voice_chat_clicks: 0,\n  affiliate_clicks: 0,\n  top_product: content.products[0]?.name || 'N/A',\n  timestamp: new Date().toISOString()\n};\n\n// Prepare Link Tracking rows (one per link)\nconst linkTrackingRows = content.tracking_data.map(track => ({\n  week_number: weekNumber,\n  link_id: track.link_id,\n  link_type: track.link_type,\n  product_name: track.product_name,\n  short_url: track.short_url,\n  long_url: track.long_url,\n  total_clicks: 0, // Will be updated later\n  last_updated: new Date().toISOString()\n}));\n\nconsole.log(`Logging: ${emailsSent} emails sent, ${linkTrackingRows.length} links tracked`);\n\nreturn [{\n  json: {\n    overview: overviewRow,\n    link_tracking: linkTrackingRows\n  }\n}];"
+      },
+      "id": "prepare-analytics-log",
+      "name": "Prepare Analytics for Google Sheets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3100, 500],
+      "notes": "Prepares data to log to Google Sheets analytics dashboard"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Overview",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "week_number": "={{ $json.overview.week_number }}",
+            "issue_date": "={{ $json.overview.issue_date }}",
+            "emails_sent": "={{ $json.overview.emails_sent }}",
+            "open_rate": "={{ $json.overview.open_rate }}",
+            "total_clicks": "={{ $json.overview.total_clicks }}",
+            "voice_chat_clicks": "={{ $json.overview.voice_chat_clicks }}",
+            "affiliate_clicks": "={{ $json.overview.affiliate_clicks }}",
+            "top_product": "={{ $json.overview.top_product }}",
+            "timestamp": "={{ $json.overview.timestamp }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-overview-to-sheets",
+      "name": "Google Sheets - Log Overview",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3320, 450],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      },
+      "notes": "Logs weekly overview stats to Overview tab"
+    },
+    {
+      "parameters": {
+        "jsCode": "// SPLIT LINK TRACKING DATA INTO SEPARATE ITEMS\nconst analyticsData = $json;\nconst linkTrackingRows = analyticsData.link_tracking;\n\n// Return each link as a separate item for Google Sheets\nreturn linkTrackingRows.map(row => ({ json: row }));"
+      },
+      "id": "split-link-tracking",
+      "name": "Split Link Tracking for Sheets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3320, 550],
+      "notes": "Splits link tracking array into individual rows"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Link Clicks",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "week_number": "={{ $json.week_number }}",
+            "link_id": "={{ $json.link_id }}",
+            "link_type": "={{ $json.link_type }}",
+            "product_name": "={{ $json.product_name }}",
+            "short_url": "={{ $json.short_url }}",
+            "long_url": "={{ $json.long_url }}",
+            "total_clicks": "={{ $json.total_clicks }}",
+            "last_updated": "={{ $json.last_updated }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-links-to-sheets",
+      "name": "Google Sheets - Log Link Clicks",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3540, 550],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      },
+      "notes": "Logs each tracked link to Link Clicks tab"
+    }
+  ],
+  "connections": {
+    "Prepare Links for Bitly + UTM": {
+      "main": [
+        [
+          {
+            "node": "Bitly - Shorten Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitly - Shorten Links": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Shortened Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Shortened Links": {
+      "main": [
+        [
+          {
+            "node": "Prepare Analytics for Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Analytics for Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Overview",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Link Tracking for Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Link Tracking for Sheets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Link Clicks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "name": "Figma Newsletter Design Integration",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "figma_file_key",
+              "value": "YOUR_FIGMA_FILE_KEY_HERE"
+            },
+            {
+              "name": "figma_token",
+              "value": "YOUR_FIGMA_TOKEN_HERE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-figma-credentials",
+      "name": "Set Figma Credentials",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [450, 300],
+      "notes": "Replace with your Figma API token and file key"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.figma.com/v1/files/{{ $json.figma_file_key }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Figma-Token",
+              "value": "={{ $json.figma_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-figma-file",
+      "name": "Fetch Figma File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300],
+      "notes": "Fetches the Figma design file metadata"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.figma.com/v1/images/{{ $('Set Figma Credentials').item.json.figma_file_key }}?ids={{ $json.document.children.map(c => c.id).join(',') }}&format=png&scale=2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Figma-Token",
+              "value": "={{ $('Set Figma Credentials').item.json.figma_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-figma-images",
+      "name": "Fetch Figma Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 300],
+      "notes": "Gets exportable image URLs for all frames"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract image URLs from Figma API response\nconst response = $input.first().json;\n\nif (response.err) {\n  return [{\n    json: {\n      error: true,\n      message: response.err,\n      note: 'Check your Figma token and file key'\n    }\n  }];\n}\n\nconst images = response.images || {};\nconst imageData = [];\n\n// Convert to array of image objects\nfor (const [nodeId, imageUrl] of Object.entries(images)) {\n  imageData.push({\n    nodeId: nodeId,\n    imageUrl: imageUrl,\n    proxyUrl: `https://images.weserv.nl/?url=${encodeURIComponent(imageUrl)}&w=600&output=webp`,\n    fileName: `figma-${nodeId}.png`\n  });\n}\n\nreturn imageData.map(img => ({ json: img }));"
+      },
+      "id": "process-figma-images",
+      "name": "Process Figma Images",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "notes": "Converts Figma image URLs to proxy URLs for email compatibility"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FigmaImages",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nodeId": "={{ $json.nodeId }}",
+            "imageUrl": "={{ $json.imageUrl }}",
+            "proxyUrl": "={{ $json.proxyUrl }}",
+            "fileName": "={{ $json.fileName }}",
+            "updatedAt": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-to-google-sheets",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [1250, 300],
+      "notes": "Optional: Store Figma image URLs in Google Sheets for reference"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate newsletter HTML using Figma images\nconst figmaImages = $input.all().map(item => item.json);\n\n// Example: Use first 3 images as hero banners\nconst heroBanner = figmaImages[0]?.proxyUrl || '';\nconst featureImage1 = figmaImages[1]?.proxyUrl || '';\nconst featureImage2 = figmaImages[2]?.proxyUrl || '';\n\n// Create HTML template with Figma images\nconst html = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Fashion Insights - Newsletter</title>\n</head>\n<body style=\"margin: 0; padding: 0; font-family: Arial, sans-serif;\">\n  <table role=\"presentation\" width=\"100%\" style=\"border-collapse: collapse;\">\n    <!-- Hero Section with Figma Design -->\n    <tr>\n      <td style=\"padding: 0;\">\n        <img src=\"${heroBanner}\" alt=\"Fashion Insights\" style=\"width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto;\">\n      </td>\n    </tr>\n    \n    <!-- Content Section -->\n    <tr>\n      <td style=\"padding: 40px 20px; background-color: #ffffff;\">\n        <h1 style=\"color: #333; font-size: 32px; margin: 0 0 20px;\">This Week in Fashion</h1>\n        <p style=\"color: #666; font-size: 16px; line-height: 1.6;\">Your weekly dose of AI-powered fashion insights from top influencers.</p>\n      </td>\n    </tr>\n    \n    <!-- Feature Images from Figma -->\n    <tr>\n      <td style=\"padding: 20px;\">\n        <table role=\"presentation\" width=\"100%\" style=\"border-collapse: collapse;\">\n          <tr>\n            <td style=\"padding: 10px; width: 50%;\">\n              <img src=\"${featureImage1}\" alt=\"Feature 1\" style=\"width: 100%; height: auto; display: block; border-radius: 8px;\">\n            </td>\n            <td style=\"padding: 10px; width: 50%;\">\n              <img src=\"${featureImage2}\" alt=\"Feature 2\" style=\"width: 100%; height: auto; display: block; border-radius: 8px;\">\n            </td>\n          </tr>\n        </table>\n      </td>\n    </tr>\n    \n    <!-- Footer -->\n    <tr>\n      <td style=\"padding: 40px 20px; background-color: #f9fafb; text-align: center;\">\n        <p style=\"color: #999; font-size: 14px; margin: 0;\">\n          Fashion Insights • Curated by Ortal<br>\n          <a href=\"mailto:ortal@onsight-analytics.com\" style=\"color: #667eea;\">ortal@onsight-analytics.com</a>\n        </p>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n`;\n\nreturn [{\n  json: {\n    html: html,\n    figmaImages: figmaImages,\n    imageCount: figmaImages.length\n  }\n}];"
+      },
+      "id": "generate-newsletter-html",
+      "name": "Generate Newsletter HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 500],
+      "notes": "Creates newsletter HTML using Figma design images"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Figma Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Figma Credentials": {
+      "main": [
+        [
+          {
+            "node": "Fetch Figma File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Figma File": {
+      "main": [
+        [
+          {
+            "node": "Fetch Figma Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Figma Images": {
+      "main": [
+        [
+          {
+            "node": "Process Figma Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Figma Images": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Newsletter HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

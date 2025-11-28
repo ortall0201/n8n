@@ -1,0 +1,291 @@
+{
+  "name": "Newsletter Unsubscribe Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "unsubscribe",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-unsubscribe",
+      "name": "Webhook - Unsubscribe",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "newsletter-unsubscribe"
+    },
+    {
+      "parameters": {
+        "jsCode": "// EXTRACT EMAIL FROM POST BODY\nconst body = $input.item.json.body;\nconst email = body.email?.trim().toLowerCase();\n\n// Validate email exists\nif (!email) {\n  return [{\n    json: {\n      error: true,\n      message: 'No email provided',\n      email: null\n    }\n  }];\n}\n\n// Validate email format\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nif (!emailRegex.test(email)) {\n  return [{\n    json: {\n      error: true,\n      message: 'Invalid email format',\n      email: email\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    error: false,\n    email: email,\n    unsubscribe_date: new Date().toISOString().split('T')[0],\n    unsubscribe_timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "extract-email",
+      "name": "Extract & Validate Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error }}",
+              "value2": false
+            }
+          ]
+        }
+      },
+      "id": "check-valid-email",
+      "name": "Is Valid Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "sheetName": {
+          "__rl": true,
+          "value": "Subscribers",
+          "mode": "list"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "get-all-subscribers",
+      "name": "Get All Subscribers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// FIND THE SUBSCRIBER ROW TO UPDATE\nconst targetEmail = $('Extract & Validate Email').first().json.email;\nconst allSubscribers = $input.all();\n\n// Find the subscriber with matching email\nconst subscriberIndex = allSubscribers.findIndex(item => {\n  return item.json.email && item.json.email.toLowerCase() === targetEmail.toLowerCase();\n});\n\nif (subscriberIndex === -1) {\n  return [{\n    json: {\n      found: false,\n      message: 'Email not found in subscriber list',\n      email: targetEmail\n    }\n  }];\n}\n\n// Get the row number (add 2 because: 1 for header, 1 for 0-index)\nconst rowNumber = subscriberIndex + 2;\nconst subscriber = allSubscribers[subscriberIndex].json;\n\nreturn [{\n  json: {\n    found: true,\n    email: targetEmail,\n    rowNumber: rowNumber,\n    currentStatus: subscriber.status,\n    name: subscriber.name\n  }\n}];"
+      },
+      "id": "find-subscriber",
+      "name": "Find Subscriber Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.found }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-found",
+      "name": "Subscriber Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "sheetName": {
+          "__rl": true,
+          "value": "Subscribers",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "unsubscribed"
+          }
+        },
+        "options": {
+          "range": "={{ 'A' + $json.rowNumber + ':F' + $json.rowNumber }}"
+        }
+      },
+      "id": "update-status",
+      "name": "Update Status to Unsubscribed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        140
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "html",
+        "responseBody": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Unsubscribed Successfully</title>\n  <style>\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      margin: 0;\n      padding: 20px;\n    }\n    .container {\n      background: white;\n      border-radius: 16px;\n      padding: 40px;\n      max-width: 500px;\n      text-align: center;\n      box-shadow: 0 20px 60px rgba(0,0,0,0.3);\n    }\n    h1 { color: #333; margin-bottom: 20px; }\n    p { color: #666; line-height: 1.6; margin-bottom: 30px; }\n    .email { font-weight: 600; color: #667eea; }\n    .button {\n      display: inline-block;\n      padding: 12px 24px;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      color: white;\n      text-decoration: none;\n      border-radius: 8px;\n      font-weight: 600;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>✅ Unsubscribed Successfully</h1>\n    <p>We've removed <span class=\"class=\"email\">{{ $('Find Subscriber Row').item.json.email }}</span> from our mailing list.</p>\n    <p>You won't receive any more newsletters from Fashion Insights.</p>\n    <p style=\"font-size: 14px; color: #999;\">Changed your mind? You can always re-subscribe later!</p>\n    <a href=\"http://localhost:5678/webhook/newsletter-signup\" class=\"button\">Re-subscribe</a>\n  </div>\n</body>\n</html>"
+      },
+      "id": "success-page",
+      "name": "Show Success Page",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "html",
+        "responseBody": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Email Not Found</title>\n  <style>\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      margin: 0;\n      padding: 20px;\n    }\n    .container {\n      background: white;\n      border-radius: 16px;\n      padding: 40px;\n      max-width: 500px;\n      text-align: center;\n      box-shadow: 0 20px 60px rgba(0,0,0,0.3);\n    }\n    h1 { color: #333; margin-bottom: 20px; }\n    p { color: #666; line-height: 1.6; }\n    .email { font-weight: 600; color: #667eea; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>❌ Email Not Found</h1>\n    <p>The email <span class=\"email\">{{ $('Extract & Validate Email').item.json.email || 'provided' }}</span> is not in our subscriber list.</p>\n    <p>You may have already unsubscribed, or you never subscribed in the first place.</p>\n  </div>\n</body>\n</html>"
+      },
+      "id": "not-found-page",
+      "name": "Show Not Found Page",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "html",
+        "responseBody": "=<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Invalid Request</title>\n  <style>\n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;\n      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n      min-height: 100vh;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      margin: 0;\n      padding: 20px;\n    }\n    .container {\n      background: white;\n      border-radius: 16px;\n      padding: 40px;\n      max-width: 500px;\n      text-align: center;\n      box-shadow: 0 20px 60px rgba(0,0,0,0.3);\n    }\n    h1 { color: #333; margin-bottom: 20px; }\n    p { color: #666; line-height: 1.6; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>⚠️ Invalid Request</h1>\n    <p>{{ $('Extract & Validate Email').item.json.message || 'Please provide a valid email address.' }}</p>\n    <p style=\"font-size: 14px; color: #999; margin-top: 30px;\">The unsubscribe link should look like:<br><code>http://localhost:5678/webhook/unsubscribe?email=your@email.com</code></p>\n  </div>\n</body>\n</html>"
+      },
+      "id": "error-page",
+      "name": "Show Error Page",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Unsubscribe": {
+      "main": [
+        [
+          {
+            "node": "Extract & Validate Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Validate Email": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Email?": {
+      "main": [
+        [
+          {
+            "node": "Get All Subscribers",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Show Error Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Subscribers": {
+      "main": [
+        [
+          {
+            "node": "Find Subscriber Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Subscriber Row": {
+      "main": [
+        [
+          {
+            "node": "Subscriber Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subscriber Found?": {
+      "main": [
+        [
+          {
+            "node": "Update Status to Unsubscribed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Show Not Found Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status to Unsubscribed": {
+      "main": [
+        [
+          {
+            "node": "Show Success Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-26T00:00:00.000Z",
+  "versionId": "newsletter-unsubscribe-v1"
+}

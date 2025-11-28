@@ -1,0 +1,109 @@
+{
+  "name": "Voice Chat Logging Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-chat-log",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-voice-chat",
+      "name": "Webhook - Voice Chat Log",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "voice-chat-log"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract voice chat interaction data\nconst body = $input.item.json.body;\n\nreturn [{\n  json: {\n    timestamp: body.timestamp || new Date().toISOString(),\n    userMessage: body.userMessage || '',\n    aiResponse: body.aiResponse || '',\n    source: body.source || 'voice-chat',\n    sessionId: body.sessionId || 'unknown'\n  }\n}];"
+      },
+      "id": "process-voice-data",
+      "name": "Process Voice Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "VoiceInteractions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "userMessage": "={{ $json.userMessage }}",
+            "aiResponse": "={{ $json.aiResponse }}",
+            "source": "={{ $json.source }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "save-to-google-sheets",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "notes": "Logs voice interactions to Google Sheets"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, message: \"Interaction logged\" } }}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respond",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Voice Chat Log": {
+      "main": [
+        [
+          {
+            "node": "Process Voice Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Voice Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

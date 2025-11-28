@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fashion Insights - Weekly AI-Powered Fashion Trends</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 100px 20px;
+      text-align: center;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      max-width: 800px;
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 24px;
+      margin-bottom: 40px;
+      opacity: 0.95;
+    }
+
+    .signup-form {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Features Section */
+    .features {
+      padding: 100px 20px;
+      background: #f9fafb;
+    }
+
+    .features-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 60px;
+      color: #333;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .feature-card p {
+      color: #666;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* Social Proof */
+    .social-proof {
+      padding: 80px 20px;
+      text-align: center;
+      background: white;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    /* CTA Section */
+    .cta {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      color: white;
+      padding: 100px 20px;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: 42px;
+      margin-bottom: 20px;
+    }
+
+    .cta p {
+      font-size: 20px;
+      margin-bottom: 40px;
+      opacity: 0.95;
+    }
+
+    /* Footer */
+    .footer {
+      background: #1f2937;
+      color: #9ca3af;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .hero p {
+        font-size: 18px;
+      }
+
+      .signup-form {
+        padding: 30px 20px;
+      }
+
+      .section-title {
+        font-size: 32px;
+      }
+
+      .stats {
+        gap: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>📸 Fashion Insights</h1>
+      <p>Get weekly AI-powered fashion trends from top influencers delivered to your inbox</p>
+
+      <div class="signup-form">
+        <form action="http://localhost:5678/webhook/newsletter-signup" method="POST">
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="your@email.com"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="name">Your Name (optional)</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Jane Doe"
+            >
+          </div>
+
+          <button type="submit" class="submit-btn">
+            Get Weekly Fashion Insights ✨
+          </button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 14px; color: #666;">
+          Join 1,000+ fashion lovers • No spam, ever
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <div class="features-container">
+      <h2 class="section-title">What You'll Get Every Week</h2>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔥</div>
+          <h3>Top 5 Trends</h3>
+          <p>AI-analyzed trends from 8 top fashion influencers, delivered weekly with actionable insights.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🛍️</div>
+          <h3>Shop the Looks</h3>
+          <p>Direct links to products and brands mentioned by influencers, with exclusive discount codes.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>Color & Style Insights</h3>
+          <p>Popular colors, key brands, and rising hashtags analyzed from thousands of fashion posts.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📸</div>
+          <h3>Featured Posts</h3>
+          <p>Curated Instagram posts with stunning fashion inspiration from leading style icons.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💡</div>
+          <h3>Business Recommendations</h3>
+          <p>Actionable tips for fashion brands, retailers, and entrepreneurs based on trend analysis.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>AI-Powered</h3>
+          <p>Advanced AI analyzes 40-64 posts weekly to give you the most relevant fashion intelligence.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="social-proof">
+    <h2 class="section-title">Trusted by Fashion Lovers</h2>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">1,000+</div>
+        <div class="stat-label">Active Subscribers</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Top Influencers Tracked</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-number">50+</div>
+        <div class="stat-label">Posts Analyzed Weekly</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <h2>Ready to Stay Ahead of Fashion Trends?</h2>
+    <p>Join our community and never miss a trend again</p>
+
+    <div class="signup-form">
+      <form action="http://localhost:5678/webhook/newsletter-signup" method="POST">
+        <div class="form-group">
+          <label for="email2">Email Address *</label>
+          <input
+            type="email"
+            id="email2"
+            name="email"
+            placeholder="your@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="name2">Your Name (optional)</label>
+          <input
+            type="text"
+            id="name2"
+            name="name"
+            placeholder="Jane Doe"
+          >
+        </div>
+
+        <button type="submit" class="submit-btn">
+          Subscribe Now ✨
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <strong>Fashion Insights</strong> • Curated by <a href="mailto:ortal@onsight-analytics.com">Ortal</a>
+    </p>
+    <p style="margin-top: 20px; font-size: 14px;">
+      AI-powered fashion trend analysis • Weekly newsletter • No spam, ever
+    </p>
+    <p style="margin-top: 30px; font-size: 12px;">
+      © 2025 Fashion Insights. All rights reserved.
+    </p>
+  </footer>
+</body>
+</html>

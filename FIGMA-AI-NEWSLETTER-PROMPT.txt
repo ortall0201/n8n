@@ -1,0 +1,126 @@
+Design a professional email newsletter layout for "Fashion Insights" - a weekly AI-powered fashion trend newsletter.
+
+CANVAS SETUP:
+Create an email newsletter artboard, 600px wide (standard email width), vertical scrolling layout.
+
+SECTION 1 - HEADER (600x200px):
+- Purple gradient background from #667eea (left) to #764ba2 (right)
+- Large centered text: "📸 Fashion Insights" in white, 48px, bold, Inter font
+- Below: "Week of January 27, 2025" in white, 16px
+- Below that: "Your weekly AI-powered fashion trends" in white, 14px, 90% opacity
+- Add subtle texture or pattern overlay at 5% opacity
+- 40px padding top and bottom
+
+SECTION 2 - TREND BANNER (600x180px):
+- White background with subtle shadow (0px 2px 10px rgba(0,0,0,0.05))
+- Large emoji icon: 🔥 (64px) centered at top
+- Below emoji: "THIS WEEK'S TOP TREND" in purple #667eea, 14px, uppercase, letter-spacing 2px
+- Main trend text: "Gender-Fluid Fashion" in black, 32px, bold, centered
+- Description below: "Fashion influencers are embracing gender-neutral pieces and fluid silhouettes this week" in gray #666, 16px, centered, max 2 lines
+- 30px padding all around
+
+SECTION 3 - COLOR PALETTE (600x300px):
+- Light purple background #f3f4ff
+- Section title: "🎨 Trending Colors" in black, 24px, bold, centered, 40px margin-bottom
+- 3 large circles in horizontal row, centered:
+  * Circle 1: 120px diameter, fill #FF6B9D (vibrant pink)
+  * Circle 2: 120px diameter, fill #C44569 (burgundy)
+  * Circle 3: 120px diameter, fill #FFA07A (coral)
+- 20px gap between circles
+- Below each circle: color code text "#FF6B9D" etc in gray, 12px
+- Bottom text: "Colors dominating influencer feeds this week" in gray, 14px, centered
+- Add subtle drop shadow to circles (0px 4px 12px rgba(0,0,0,0.1))
+
+SECTION 4 - PRODUCTS & BRANDS (600x450px):
+- White background
+- Section title: "🛍️ Products & Brands Mentioned" in black, 24px, bold, centered, 40px margin-bottom
+- 3 product cards in horizontal row, centered:
+
+  Each card (180x350px):
+  - White background
+  - Image placeholder at top (180x180px, rounded corners 8px) - use gray rectangle with image icon
+  - 15px padding below image
+  - Brand name: "Dior" in black, 16px, bold, centered
+  - Product type: "Evening Gown" in gray #888, 14px, centered
+  - Price or description: "Featured by 3 influencers" in gray, 12px, centered
+  - Button at bottom: "Shop →" (140px wide, 40px tall, purple #667eea background, white text, 14px, rounded 8px)
+  - Add shadow: 0px 2px 8px rgba(0,0,0,0.08)
+  - 10px gap between cards
+
+SECTION 5 - FEATURED POSTS GRID (600x900px):
+- Light gray background #f9fafb
+- Section title: "📸 Featured This Week" in black, 24px, bold, centered, 40px margin-bottom
+- 2-column grid layout with 20px padding all around:
+
+  Each post card (280x400px):
+  - White background with rounded corners 8px
+  - Image placeholder at top (280x280px, rounded top corners 8px) - use gray with image icon
+  - 20px padding below image
+  - Author: "@chiaraferragni" in purple #667eea, 14px, bold
+  - Caption text: "Stunning Dior gown at Paris Fashion Week. The gender-fluid silhouette is everything..." in dark gray #333, 14px, 3 lines max, line-height 1.5
+  - At bottom: "View Post →" link in purple #667eea, 14px
+  - Add shadow: 0px 2px 8px rgba(0,0,0,0.08)
+
+  Create 4 post cards total (2 rows, 2 columns)
+  - 20px gap between cards horizontally
+  - 24px gap between rows vertically
+  - Different placeholder influencer names for each: @chiaraferragni, @aimesong, @alexa_chung, @wisdomkaye
+
+SECTION 6 - SUBSCRIPTION FORM (600x380px):
+- Purple gradient background from #764ba2 (left) to #667eea (right) - reversed from header
+- All text in white, centered
+- Title: "💌 Never Miss a Trend" in white, 28px, bold, 20px margin-bottom
+- Subtitle: "Join 1,000+ fashion lovers getting weekly insights" in white, 16px, 30px margin-bottom
+
+Form elements (centered, 540px wide):
+- Text label: "Email Address *" in white, 14px, bold, left-aligned
+- Input field: white rectangle, 540x48px, rounded 8px, placeholder "your@email.com" in gray, 8px margin-bottom
+- Text label: "Your Name (optional)" in white, 14px, bold, left-aligned
+- Input field: white rectangle, 540x48px, rounded 8px, placeholder "Jane Doe" in gray, 20px margin-bottom
+- Submit button: white rectangle, 540x56px, rounded 8px, purple text #667eea, 18px bold: "Get Weekly Fashion Insights ✨"
+- Small text below: "No spam, ever • Unsubscribe anytime" in white 80% opacity, 12px, 20px margin-top
+
+SECTION 7 - FOOTER (600x250px):
+- Dark gray background #1f2937
+- All content centered
+
+Top section:
+- "Fashion Insights" in white, 16px, bold, 12px margin-bottom
+- "Curated by Ortal - Data Scientist & AI Builder" in gray #9ca3af, 14px, 8px margin-bottom
+- "Specializing in trend analysis, automation, and creative intelligence tools" in gray #6b7280, 12px, 8px margin-bottom
+- Email link: "ortal@onsight-analytics.com" in purple #667eea, 14px, clickable appearance, 20px margin-bottom
+
+Separator line:
+- Horizontal line, 400px wide, 1px height, gray #4b5563, centered, 20px margin top and bottom
+
+Bottom section:
+- Links in horizontal row: "Unsubscribe" • "View in Browser" • "Privacy Policy" in gray #9ca3af, 12px, with bullet separators
+- Copyright: "© 2025 Fashion Insights. All rights reserved." in gray #6b7280, 10px, 20px margin-top
+
+DESIGN SPECIFICATIONS:
+- Use Inter font family throughout (or similar modern sans-serif)
+- Primary color: #667eea (purple)
+- Secondary color: #764ba2 (darker purple)
+- Text colors: black #000 for headers, dark gray #333 for body, light gray #666/#888 for secondary text
+- Rounded corners: 8px for cards and inputs, 12px for buttons
+- Shadows: Subtle, consistent (0px 2px 8px rgba(0,0,0,0.08) for cards)
+- Spacing: Consistent 20px, 40px padding
+- All sections should be 600px wide
+- Clean, modern, minimalist aesthetic
+- Fashion-forward but professional
+- Emphasize visual hierarchy
+- Generous whitespace
+- Mobile-friendly proportions
+
+STYLE:
+- Modern and clean
+- Professional fashion industry aesthetic
+- Purple gradient theme throughout
+- High contrast for readability
+- Grid-based alignment
+- Consistent spacing system
+- Balance of text and imagery
+- Clear call-to-action buttons
+- Newsletter/email optimized layout
+
+Create all 7 sections stacked vertically in one artboard for a complete newsletter design!

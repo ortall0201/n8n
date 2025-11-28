@@ -1,0 +1,103 @@
+{
+  "name": "Fashion Insights - ULTIMATE (Security + Newsletter + Devi + Analytics)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "daysOfWeek": [{"day": "monday"}],
+              "hoursInterval": 1,
+              "minutesInterval": 1,
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule: Every Monday 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "// WORKFLOW CONTROLLER AGENT - Budget + Frequency + Post Limits\n\nconst CONFIG = {\n  max_posts_per_week: 50,\n  max_cost_per_week: 5.00,\n  cost_per_post: 0.075,\n  min_days_between_runs: 7,\n  curated_influencers: ['marianna_hewitt', 'weworewhat', 'songofstyle', 'blaireadiebee', 'chrissyford'],\n  posts_per_influencer: 10,\n  newsletter_url: 'https://your-project.lovable.app'\n};\n\nconst today = new Date();\nconst lastRunDate = new Date('2025-01-20');\nconst daysSinceLastRun = Math.floor((today - lastRunDate) / (1000 * 60 * 60 * 24));\nconst estimatedCost = CONFIG.max_posts_per_week * CONFIG.cost_per_post;\n\nconst decision = {\n  shouldRun: true,\n  checks: {\n    frequency: { passed: daysSinceLastRun >= CONFIG.min_days_between_runs },\n    budget: { passed: estimatedCost <= CONFIG.max_cost_per_week },\n    post_limit: { passed: CONFIG.max_posts_per_week === 50 }\n  }\n};\n\nif (!Object.values(decision.checks).every(c => c.passed)) decision.shouldRun = false;\n\nconsole.log(`WORKFLOW CONTROLLER: ${decision.shouldRun ? 'RUN' : 'SKIP'} (Cost: $${estimatedCost}, Days: ${daysSinceLastRun})`);\n\nreturn [{ json: { ...decision, ...CONFIG, estimatedCost, daysSinceLastRun } }];"
+      },
+      "id": "workflow-controller",
+      "name": "Workflow Controller Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {"boolean": [{"value1": "={{ $json.shouldRun }}", "value2": true}]}
+      },
+      "id": "should-run",
+      "name": "Should Run Workflow?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.brightdata.com/datasets/v3/snapshot/YOUR_DATASET_ID_HERE",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{"name": "Authorization", "value": "Bearer YOUR_API_TOKEN_HERE"}]
+        }
+      },
+      "id": "brightdata-scrape",
+      "name": "Bright Data - Get Instagram Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [920, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const posts = $input.all();\nlet allPosts = [];\nif (posts.length > 0 && posts[0].json) {\n  if (Array.isArray(posts[0].json)) allPosts = posts[0].json;\n  else if (posts[0].json.data) allPosts = posts[0].json.data;\n  else allPosts = posts.map(p => p.json);\n}\nconst transformed = allPosts.map(post => ({\n  json: {\n    id: post.post_id || post.pk,\n    username: post.user_posted,\n    caption: post.description || '',\n    likes: post.likes || 0,\n    comments: post.num_comments || 0,\n    hashtags: post.hashtags || [],\n    posted_at: post.date_posted,\n    image_url: (post.photos && post.photos[0]) || post.thumbnail,\n    post_url: post.url,\n    shopping_url: post.shopping_url || null\n  }\n}));\nreturn transformed;"
+      },
+      "id": "parse-brightdata",
+      "name": "Parse Bright Data Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1140, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// CONTENT SAFETY FILTER AGENT - Palestine, Politics, Profanity\n\nconst posts = $input.all();\nconst FORBIDDEN = {\n  palestine: ['palestine', 'palestinian', 'gaza', 'westbank', 'west bank', 'freepalestine', 'free palestine', 'from the river', 'from river to sea', 'apartheid', 'occupation', 'zionist', 'zionism', 'idf', 'israel', 'israeli', 'nakba', 'intifada', 'al-aqsa', 'bds', '🇵🇸', '🍉'],\n  political: ['political', 'politics', 'election', 'vote', 'campaign', 'president', 'government', 'activism', 'activist', 'protest', 'boycott', 'movement', 'solidarity', 'resistance', 'humanitarian crisis', 'war', 'conflict', 'ceasefire', 'genocide', 'refugee'],\n  profanity: ['fuck', 'fucking', 'fucked', 'fucker', 'shit', 'shitty', 'bullshit', 'damn', 'damned', 'goddamn', 'bitch', 'bitchy', 'ass', 'asshole', 'hell', 'bastard', 'crap', 'piss', 'dick', 'cock', 'pussy', 'whore', 'slut'],\n  controversial: ['abortion', 'gun control', 'immigration ban', 'racism', 'sexism', 'hate crime', 'nazi', 'fascist', 'terrorist', 'extremist']\n};\n\nfunction isSafe(post) {\n  const text = (post.json.caption + ' ' + (post.json.hashtags || []).join(' ')).toLowerCase();\n  for (const [category, terms] of Object.entries(FORBIDDEN)) {\n    for (const term of terms) {\n      if (text.includes(term.toLowerCase())) return false;\n    }\n  }\n  return true;\n}\n\nconst safePosts = posts.filter(isSafe);\nconst filtered = posts.length - safePosts.length;\n\nconsole.log(`SAFETY FILTER: ${safePosts.length} safe, ${filtered} filtered`);\n\nreturn [{ json: { safe_posts: safePosts.map(p => p.json), total_posts: posts.length, safe_count: safePosts.length, filtered_count: filtered } }];"
+      },
+      "id": "content-safety-filter",
+      "name": "Content Safety Filter Agent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 200]
+    }
+  ],
+  "connections": {
+    "Schedule: Every Monday 9 AM": {"main": [[{"node": "Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "Manual Test Trigger": {"main": [[{"node": "Workflow Controller Agent", "type": "main", "index": 0}]]},
+    "Workflow Controller Agent": {"main": [[{"node": "Should Run Workflow?", "type": "main", "index": 0}]]},
+    "Should Run Workflow?": {"main": [[{"node": "Bright Data - Get Instagram Posts", "type": "main", "index": 0}]]},
+    "Bright Data - Get Instagram Posts": {"main": [[{"node": "Parse Bright Data Response", "type": "main", "index": 0}]]},
+    "Parse Bright Data Response": {"main": [[{"node": "Content Safety Filter Agent", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0
+}

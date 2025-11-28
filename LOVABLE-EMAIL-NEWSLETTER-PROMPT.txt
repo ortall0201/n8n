@@ -1,0 +1,115 @@
+Create a beautiful newsletter design for "Fashion Insights" - an AI-powered weekly fashion email.
+
+IMPORTANT: This is an EMAIL newsletter, not a website. Design for 600px width, vertical layout.
+
+HEADER SECTION (600px width):
+- Purple gradient background (#667eea to #764ba2)
+- Large heading: "📸 Fashion Insights" (48px, white, bold, centered)
+- Subheading: "Week of January 27, 2025" (16px, white, centered)
+- Small text: "Your weekly AI-powered fashion trends" (14px, white, opacity 90%)
+
+TREND BANNER SECTION (600px width):
+- White background with subtle shadow
+- Large emoji: 🔥 (64px, centered)
+- Text: "This Week's Top Trend" (16px, purple, uppercase, centered)
+- Large trend name: "Gender-Fluid Fashion" (32px, bold, centered)
+- Short description: "Fashion influencers are embracing gender-neutral pieces..." (16px, gray, centered, 2-3 lines)
+
+COLOR PALETTE SECTION (600px width):
+- Light purple background (#f3f4ff)
+- Section title: "🎨 Trending Colors" (24px, bold, centered)
+- 3 large circles in a row (120px diameter each, 20px gap):
+  * Circle 1: #FF6B9D (pink)
+  * Circle 2: #C44569 (burgundy)
+  * Circle 3: #FFA07A (coral)
+- Below each circle: color code in small text (12px)
+- Bottom text: "Colors dominating influencer feeds this week"
+
+PRODUCTS SECTION (600px width):
+- White background
+- Section title: "🛍️ Products & Brands Mentioned" (24px, bold, centered)
+- 3 product cards in a row (180px wide each, 10px gap):
+  Card design:
+  - Product image placeholder (180x180px, rounded 8px)
+  - Brand name: "Dior" (16px, bold, centered)
+  - Product type: "Evening Gown" (14px, gray, centered)
+  - Small button: "Shop →" (purple, rounded, centered)
+
+FEATURED POSTS SECTION (600px width):
+- Light gray background (#f9fafb)
+- Section title: "📸 Featured This Week" (24px, bold, centered)
+- 2-column grid (280px per column, 20px gap, 20px padding):
+
+  Post card (repeat 4 times, 2 per row):
+  - Image placeholder (280x280px, rounded 8px)
+  - Author: "@chiaraferragni" (14px, purple, bold)
+  - Caption: "Stunning Dior gown at Paris Fashion Week..." (14px, gray, 2 lines max)
+  - Link: "View Post →" (14px, purple)
+  - Separator line below
+
+SUBSCRIPTION SECTION (600px width):
+- Purple gradient background (#764ba2 to #667eea, reversed from header)
+- White text, centered
+- Title: "💌 Never Miss a Trend" (28px, bold)
+- Subtext: "Join 1,000+ fashion lovers getting weekly insights" (16px)
+
+Form design:
+- Label: "Email Address *" (14px, bold, left-aligned, white)
+- Input box: (540px wide, 48px tall, white, rounded 8px, placeholder: "your@email.com")
+- Label: "Your Name (optional)" (14px, bold, left-aligned, white)
+- Input box: (540px wide, 48px tall, white, rounded 8px, placeholder: "Jane Doe")
+- Submit button: (540px wide, 56px tall, white background, purple text, rounded 8px)
+  Button text: "Get Weekly Fashion Insights ✨" (18px, bold)
+
+- Small text below: "No spam, ever • Unsubscribe anytime" (12px, white, opacity 80%)
+
+FOOTER SECTION (600px width):
+- Dark gray background (#1f2937)
+- White/gray text, centered
+
+Content:
+- "Fashion Insights" (16px, white, bold)
+- "Curated by Ortal - Data Scientist & AI Builder" (14px, gray)
+- "Specializing in trend analysis, automation, and creative intelligence" (12px, gray)
+- Email: "ortal@onsight-analytics.com" (14px, purple #667eea, clickable)
+
+- Thin line separator (400px, gray, 40% opacity)
+
+- Bottom row of links (12px, gray, with • separators):
+  "Unsubscribe" • "View in Browser" • "Privacy Policy"
+
+- Copyright: "© 2025 Fashion Insights. All rights reserved." (10px, gray)
+
+DESIGN STYLE:
+- Modern, clean, professional
+- Vertical layout (no horizontal scrolling)
+- 600px max width (email-safe)
+- Purple color theme (#667eea, #764ba2)
+- Generous padding and whitespace
+- Clear visual hierarchy
+- Mobile-friendly responsive design
+- Professional typography (Inter or similar)
+- Rounded corners (8px for cards, 12px for buttons)
+- Subtle shadows on cards
+- No complex animations (email-safe)
+- Simple, elegant, fashion-focused
+
+TECHNICAL REQUIREMENTS:
+- Single column layout (vertical stacking)
+- 600px max width
+- No JavaScript
+- Inline CSS (email-compatible)
+- No external fonts (system fonts or embedded)
+- All images should have alt text
+- Accessible design
+- Works in Gmail, Outlook, Apple Mail
+
+CONTENT PLACEHOLDERS:
+Use realistic example content that I can replace:
+- Trend name: "Gender-Fluid Fashion"
+- Colors: Pink, Burgundy, Coral
+- Brands: Dior, Chanel, Gucci
+- Influencers: @chiaraferragni, @aimesong, @alexa_chung
+- Date: "Week of January 27, 2025"
+
+This design will be converted to email HTML and sent via automation weekly!

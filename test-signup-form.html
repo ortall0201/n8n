@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Insights - Newsletter Signup Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .webhook-info {
+            margin-top: 32px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .webhook-info h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .webhook-info code {
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #667eea;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .status {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Fashion Insights</h1>
+        <p>Get weekly AI-powered fashion trends and influencer product picks delivered to your inbox!</p>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="your@email.com"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name (optional)</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Your Name"
+                >
+            </div>
+
+            <button type="submit" id="submitBtn">
+                Subscribe to Newsletter
+            </button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div class="webhook-info">
+            <h3>🔧 Testing Info</h3>
+            <p class="status">Webhook URL: <code>http://localhost:5678/webhook/newsletter-signup</code></p>
+            <p class="status" id="webhookStatus">Status: Checking...</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const messageDiv = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        const webhookUrl = 'http://localhost:5678/webhook/newsletter-signup';
+
+        // Check webhook status on load
+        async function checkWebhookStatus() {
+            const statusEl = document.getElementById('webhookStatus');
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'OPTIONS'
+                });
+                statusEl.innerHTML = '✅ Status: <strong style="color: green;">Webhook Active</strong>';
+            } catch (error) {
+                statusEl.innerHTML = '❌ Status: <strong style="color: red;">Webhook Not Running</strong><br><small>Make sure n8n is running and workflow is activated!</small>';
+            }
+        }
+
+        checkWebhookStatus();
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Subscribing...';
+            messageDiv.className = 'message';
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        name: name || email.split('@')[0],
+                        source: 'test_form'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('success', data.message || 'Successfully subscribed! 🎉');
+                    form.reset();
+                } else {
+                    showMessage('error', data.message || 'Something went wrong. Please try again.');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showMessage('error', 'Could not connect to server. Make sure n8n is running at localhost:5678 and the Newsletter Signup webhook is activated!');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Subscribe to Newsletter';
+            }
+        });
+
+        function showMessage(type, text) {
+            messageDiv.className = `message ${type} show`;
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
