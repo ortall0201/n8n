@@ -292,14 +292,12 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combinationMode": "mergeByPosition",
-        "options": {}
+        "jsCode": "// MERGE ALL DEVI CONTENT (Blog + Instagram + TikTok)\nconst items = $input.all();\n\n// All items have the same base data, we just need to merge the unique fields\nconst merged = {};\n\n// Merge all fields from all items\nitems.forEach(item => {\n  Object.assign(merged, item.json);\n});\n\nconsole.log('✅ Merged Devi content - has blog_html:', !!merged.blog_html, 'has ig_script:', !!merged.ig_script, 'has tiktok_script:', !!merged.tiktok_script);\n\nreturn [{ json: merged }];"
       },
       "id": "merge-all-content",
       "name": "🔀 Merge All Devi Content",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [3120, 250],
       "notes": "Combines blog, Instagram, and TikTok content into one object"
     },
