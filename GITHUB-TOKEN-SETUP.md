@@ -1,7 +1,7 @@
-# 🔑 GitHub Token Setup for Devi Workflow
+# 🔑 GitHub Setup for Devi Workflow
 
 ## Why You Need This
-The workflow now pushes files **directly to GitHub** using the GitHub API - no local files needed! This works from anywhere (Docker, npm, cloud).
+The workflow now pushes files **directly to GitHub** using n8n's built-in GitHub node - no local files needed! This works from anywhere (Docker, npm, cloud).
 
 ---
 
@@ -24,23 +24,41 @@ The workflow now pushes files **directly to GitHub** using the GitHub API - no l
 
 ---
 
-## Step 2: Add Token to n8n Workflow (1 minute)
+## Step 2: Add GitHub Credential to n8n (3 minutes)
 
 1. **Open n8n**: http://localhost:5678
 
-2. **Import the workflow**: `workflows/FASHION-INSIGHTS-COMPLETE-MERGED-GOOGLE-ANALYTICS.json`
+2. **Go to Credentials**:
+   - Click on your profile (top right)
+   - Select **"Credentials"**
 
-3. **Find these 3 nodes** (click on each one):
+3. **Create New Credential**:
+   - Click **"Add credential"**
+   - Search for **"GitHub"**
+   - Select **"GitHub API"**
+
+4. **Fill in the details**:
+   - **Name**: `GitHub Account` (or any name you prefer)
+   - **Access Token**: Paste the token from Step 1
+   - Click **"Save"**
+
+---
+
+## Step 3: Connect Nodes to GitHub Credential (1 minute)
+
+1. **Open the workflow**: `workflows/FASHION-INSIGHTS-COMPLETE-MERGED-GOOGLE-ANALYTICS.json`
+
+2. **Find these 3 GitHub nodes** (they use `n8n-nodes-base.github`):
    - 💾 Save Blog to GitHub
    - 💾 Save Instagram to GitHub
    - 💾 Save TikTok to GitHub
 
-4. **For EACH node**, update the token:
-   - Find: `Authorization` header
-   - Replace: `YOUR_GITHUB_TOKEN_HERE` with your actual token
-   - Should look like: `Bearer ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+3. **For EACH node**, connect the credential:
+   - Click the node
+   - Under **"Credential"**, select the **"GitHub Account"** credential you just created
+   - No need to manually enter tokens!
 
-5. **Save the workflow**
+4. **Save the workflow**
 
 ---
 
@@ -57,19 +75,28 @@ You should see a new folder: `devi-content/week-1/` with 3 files! ✅
 
 ## How It Works
 
-Each save node makes an HTTP PUT request to GitHub API:
+Each save node uses n8n's **built-in GitHub node** with these parameters:
 
 ```
-PUT https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-1/blog.html
-Authorization: Bearer ghp_your_token_here
-Body: {
-  "message": "💜 Devi Week 1 - blog.html",
-  "content": "base64-encoded-html-content"
-}
+Resource: File
+Operation: Create
+Owner: ortall0201
+Repository: n8n
+File Path: devi-content/week-1/blog.html
+File Content: <html content>
+Commit Message: 💜 Devi Week 1 - blog.html
+Branch: master
 ```
+
+**Best Practices Used**:
+- ✅ Uses `n8n-nodes-base.github` (not HTTP Request)
+- ✅ No manual base64 encoding needed
+- ✅ Cleaner, more maintainable code
+- ✅ Better error handling
+- ✅ Proper credential management
 
 GitHub automatically:
-- Creates the file
+- Creates the file (handles base64 encoding)
 - Creates a commit
 - Pushes to master branch
 

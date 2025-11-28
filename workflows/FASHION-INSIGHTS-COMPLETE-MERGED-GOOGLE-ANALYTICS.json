@@ -407,81 +407,84 @@
     },
     {
       "parameters": {
-        "method": "PUT",
-        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/blog.html",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"},
-            {"name": "Content-Type", "value": "application/json"}
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - blog.html', content: $base64Encode($json.blog_html) }) }}",
-        "options": {}
+        "resource": "file",
+        "owner": "ortall0201",
+        "repository": "n8n",
+        "filePath": "=devi-content/week-{{ $json.week_number }}/blog.html",
+        "fileContent": "={{ $json.blog_html }}",
+        "commitMessage": "=💜 Devi Week {{ $json.week_number }} - blog.html",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
       },
       "id": "save-blog-github",
       "name": "💾 Save Blog to GitHub",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
       "position": [3520, 200],
-      "notes": "Saves blog HTML directly to GitHub via API"
+      "credentials": {
+        "githubApi": {
+          "id": "YOUR_GITHUB_CREDENTIAL",
+          "name": "GitHub Account"
+        }
+      },
+      "notes": "Best practice: Uses n8n GitHub node instead of HTTP Request"
     },
     {
       "parameters": {
-        "method": "PUT",
-        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/instagram-script.txt",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"},
-            {"name": "Content-Type", "value": "application/json"}
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - instagram-script.txt', content: $base64Encode($json.instagram_text) }) }}",
-        "options": {}
+        "resource": "file",
+        "owner": "ortall0201",
+        "repository": "n8n",
+        "filePath": "=devi-content/week-{{ $json.week_number }}/instagram-script.txt",
+        "fileContent": "={{ $json.instagram_text }}",
+        "commitMessage": "=💜 Devi Week {{ $json.week_number }} - instagram-script.txt",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
       },
       "id": "save-ig-github",
       "name": "💾 Save Instagram to GitHub",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
       "position": [3520, 300],
-      "notes": "Saves Instagram script directly to GitHub via API"
+      "credentials": {
+        "githubApi": {
+          "id": "YOUR_GITHUB_CREDENTIAL",
+          "name": "GitHub Account"
+        }
+      },
+      "notes": "Best practice: Uses n8n GitHub node instead of HTTP Request"
     },
     {
       "parameters": {
-        "method": "PUT",
-        "url": "=https://api.github.com/repos/ortall0201/n8n/contents/devi-content/week-{{ $json.week_number }}/tiktok-script.txt",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"},
-            {"name": "Content-Type", "value": "application/json"}
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - tiktok-script.txt', content: $base64Encode($json.tiktok_text) }) }}",
-        "options": {}
+        "resource": "file",
+        "owner": "ortall0201",
+        "repository": "n8n",
+        "filePath": "=devi-content/week-{{ $json.week_number }}/tiktok-script.txt",
+        "fileContent": "={{ $json.tiktok_text }}",
+        "commitMessage": "=💜 Devi Week {{ $json.week_number }} - tiktok-script.txt",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
       },
       "id": "save-tiktok-github",
       "name": "💾 Save TikTok to GitHub",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
       "position": [3520, 400],
-      "notes": "Saves TikTok script directly to GitHub via API"
+      "credentials": {
+        "githubApi": {
+          "id": "YOUR_GITHUB_CREDENTIAL",
+          "name": "GitHub Account"
+        }
+      },
+      "notes": "Best practice: Uses n8n GitHub node instead of HTTP Request"
     },
     {
       "parameters": {
