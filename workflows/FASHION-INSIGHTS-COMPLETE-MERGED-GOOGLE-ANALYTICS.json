@@ -482,6 +482,58 @@
       "typeVersion": 4.2,
       "position": [3520, 400],
       "notes": "Saves TikTok script directly to GitHub via API"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// COLLECT ALL GITHUB API RESPONSES FOR TRACKING\nconst blogResponse = $('💾 Save Blog to GitHub').all()[0].json;\nconst igResponse = $('💾 Save Instagram to GitHub').all()[0].json;\nconst tiktokResponse = $('💾 Save TikTok to GitHub').all()[0].json;\n\nconst weekNumber = blogResponse.content?.path?.match(/week-(\\d+)/)?.[1] || 'unknown';\n\nconst timestamp = new Date().toISOString();\n\n// Create tracking entries for each file\nconst trackingEntries = [\n  {\n    timestamp: timestamp,\n    week: weekNumber,\n    file_type: 'blog',\n    file_name: 'blog.html',\n    github_url: blogResponse.content?.html_url || 'N/A',\n    commit_sha: blogResponse.commit?.sha || 'N/A',\n    status: blogResponse.commit ? 'success' : 'failed'\n  },\n  {\n    timestamp: timestamp,\n    week: weekNumber,\n    file_type: 'instagram',\n    file_name: 'instagram-script.txt',\n    github_url: igResponse.content?.html_url || 'N/A',\n    commit_sha: igResponse.commit?.sha || 'N/A',\n    status: igResponse.commit ? 'success' : 'failed'\n  },\n  {\n    timestamp: timestamp,\n    week: weekNumber,\n    file_type: 'tiktok',\n    file_name: 'tiktok-script.txt',\n    github_url: tiktokResponse.content?.html_url || 'N/A',\n    commit_sha: tiktokResponse.commit?.sha || 'N/A',\n    status: tiktokResponse.commit ? 'success' : 'failed'\n  }\n];\n\nconsole.log(`📊 TRACKING: Logged ${trackingEntries.length} files for week ${weekNumber}`);\n\nreturn trackingEntries.map(entry => ({ json: entry }));"
+      },
+      "id": "log-files-tracker",
+      "name": "📊 Log Files to Google Sheets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3740, 300],
+      "notes": "Collects GitHub API responses for tracking"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "File Tracker",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "week": "={{ $json.week }}",
+            "file_type": "={{ $json.file_type }}",
+            "file_name": "={{ $json.file_name }}",
+            "github_url": "={{ $json.github_url }}",
+            "commit_sha": "={{ $json.commit_sha }}",
+            "status": "={{ $json.status }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-file-tracker-sheets",
+      "name": "📊 Google Sheets - Log File Tracker",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3960, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL",
+          "name": "Google Sheets Account"
+        }
+      },
+      "notes": "Logs file creation with GitHub URLs and commit SHAs"
     }
   ],
   "connections": {
@@ -571,13 +623,16 @@
       ]]
     },
     "💾 Save Blog to GitHub": {
-      "main": [[]]
+      "main": [[{"node": "📊 Log Files to Google Sheets", "type": "main", "index": 0}]]
     },
     "💾 Save Instagram to GitHub": {
-      "main": [[]]
+      "main": [[{"node": "📊 Log Files to Google Sheets", "type": "main", "index": 0}]]
     },
     "💾 Save TikTok to GitHub": {
-      "main": [[]]
+      "main": [[{"node": "📊 Log Files to Google Sheets", "type": "main", "index": 0}]]
+    },
+    "📊 Log Files to Google Sheets": {
+      "main": [[{"node": "📊 Google Sheets - Log File Tracker", "type": "main", "index": 0}]]
     },
     "Devi Affiliate Link Processor": {
       "main": [[
