@@ -415,16 +415,13 @@
         "headerParameters": {
           "parameters": [
             {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"}
+            {"name": "Accept", "value": "application/vnd.github+json"},
+            {"name": "Content-Type", "value": "application/json"}
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - blog.html"},
-            {"name": "content", "value": "={{ $base64Encode($json.blog_html) }}"}
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - blog.html', content: $base64Encode($json.blog_html) }) }}",
         "options": {}
       },
       "id": "save-blog-github",
@@ -444,16 +441,13 @@
         "headerParameters": {
           "parameters": [
             {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"}
+            {"name": "Accept", "value": "application/vnd.github+json"},
+            {"name": "Content-Type", "value": "application/json"}
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - instagram-script.txt"},
-            {"name": "content", "value": "={{ $base64Encode($json.instagram_text) }}"}
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - instagram-script.txt', content: $base64Encode($json.instagram_text) }) }}",
         "options": {}
       },
       "id": "save-ig-github",
@@ -473,16 +467,13 @@
         "headerParameters": {
           "parameters": [
             {"name": "Authorization", "value": "Bearer YOUR_GITHUB_TOKEN_HERE"},
-            {"name": "Accept", "value": "application/vnd.github+json"}
+            {"name": "Accept", "value": "application/vnd.github+json"},
+            {"name": "Content-Type", "value": "application/json"}
           ]
         },
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {"name": "message", "value": "=💜 Devi Week {{ $json.week_number }} - tiktok-script.txt"},
-            {"name": "content", "value": "={{ $base64Encode($json.tiktok_text) }}"}
-          ]
-        },
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: '💜 Devi Week ' + $json.week_number + ' - tiktok-script.txt', content: $base64Encode($json.tiktok_text) }) }}",
         "options": {}
       },
       "id": "save-tiktok-github",
