@@ -292,15 +292,23 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// MERGE ALL DEVI CONTENT (Blog + Instagram + TikTok)\nconst items = $input.all();\n\nconsole.log('🔍 MERGE DEBUG - Received', items.length, 'items');\n\n// All items have the same base data, we just need to merge the unique fields\nconst merged = {};\n\n// Merge all fields from all items - BUT SKIP UNDEFINED VALUES\nitems.forEach((item, index) => {\n  console.log('🔍 Item', index, 'has blog_html:', !!item.json.blog_html);\n  console.log('🔍 Item', index, 'has ig_script:', !!item.json.ig_script);\n  console.log('🔍 Item', index, 'has tiktok_script:', !!item.json.tiktok_script);\n  \n  // Only assign defined values (skip undefined/null)\n  Object.keys(item.json).forEach(key => {\n    if (item.json[key] !== undefined && item.json[key] !== null) {\n      merged[key] = item.json[key];\n    }\n  });\n});\n\nconsole.log('✅ AFTER MERGE:');\nconsole.log('  - has blog_html:', !!merged.blog_html);\nconsole.log('  - has ig_script:', !!merged.ig_script);\nconsole.log('  - has tiktok_script:', !!merged.tiktok_script);\n\nreturn [{ json: merged }];"
+        "jsCode": "// FORMAT INSTAGRAM SCRIPT FOR GITHUB SAVE\nconst content = $json;\nconst igScript = content.ig_script;\n\nconst igText = 'INSTAGRAM CAROUSEL - WEEK ' + content.week_number + '\\n' + '='.repeat(50) + '\\n\\nCAPTION:\\n' + igScript.caption + '\\n\\n' + '='.repeat(50) + '\\n\\nSLIDES:\\n' + igScript.slides.map(s => '\\nSlide ' + s.slide + ' (' + s.type + '):\\nText: ' + s.text + '\\nDesign: ' + s.design_notes).join('\\n\\n') + '\\n\\n' + '='.repeat(50) + '\\n\\nHASHTAGS: ' + igScript.hashtags.join(' #') + '\\nPOST TIME: ' + igScript.post_time + '\\nCTA: ' + igScript.cta;\n\nreturn [{ json: { week_number: content.week_number, instagram_text: igText } }];"
       },
-      "id": "merge-all-content",
-      "name": "🔀 Merge All Devi Content",
+      "id": "format-ig",
+      "name": "Format Instagram for Save",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [3120, 250],
-      "notes": "Combines blog, Instagram, and TikTok content into one object"
+      "position": [3120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// FORMAT TIKTOK SCRIPT FOR GITHUB SAVE\nconst content = $json;\nconst tiktokScript = content.tiktok_script;\n\nconst tiktokText = 'TIKTOK/REELS VIDEO - WEEK ' + content.week_number + '\\n' + '='.repeat(50) + '\\n\\nVIDEO SCRIPT:\\n\\nHOOK (0-3s):\\n' + tiktokScript.script.hook.text + '\\nVisual: ' + tiktokScript.script.hook.visual + '\\n\\nBODY (4-25s):\\n' + tiktokScript.script.body.text + '\\nVisual: ' + tiktokScript.script.body.visual + '\\n\\nCTA (26-30s):\\n' + tiktokScript.script.cta.text + '\\nVisual: ' + tiktokScript.script.cta.visual + '\\n\\n' + '='.repeat(50) + '\\n\\nCAPTION: ' + tiktokScript.caption + '\\nHASHTAGS: ' + tiktokScript.hashtags.join(' #') + '\\nSOUNDS: ' + tiktokScript.sounds.join(', ') + '\\nPOST TIME: ' + tiktokScript.post_time;\n\nreturn [{ json: { week_number: content.week_number, tiktok_text: tiktokText } }];"
+      },
+      "id": "format-tiktok",
+      "name": "Format TikTok for Save",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3120, 400]
     },
     {
       "parameters": {
@@ -399,7 +407,7 @@
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week }} && cat > \"devi-content/week-{{ $json.week }}/blog.html\" << 'EOFBLOG'\n{{ $json.blog_html }}\nEOFBLOG",
+        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/blog.html\" << 'EOFBLOG'\n{{ $json.blog_html }}\nEOFBLOG",
         "description": "Save blog HTML to GitHub repo"
       },
       "id": "save-blog-github",
@@ -411,7 +419,7 @@
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && cat > \"devi-content/week-{{ $json.week }}/instagram-script.txt\" << 'EOFIG'\n{{ $json.instagram_text }}\nEOFIG",
+        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/instagram-script.txt\" << 'EOFIG'\n{{ $json.instagram_text }}\nEOFIG",
         "description": "Save Instagram script to GitHub repo"
       },
       "id": "save-ig-github",
@@ -423,7 +431,7 @@
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && cat > \"devi-content/week-{{ $json.week }}/tiktok-script.txt\" << 'EOFTIKTOK'\n{{ $json.tiktok_text }}\nEOFTIKTOK",
+        "command": "cd /c/Users/user/Desktop/n8n && mkdir -p devi-content/week-{{ $json.week_number }} && cat > \"devi-content/week-{{ $json.week_number }}/tiktok-script.txt\" << 'EOFTIKTOK'\n{{ $json.tiktok_text }}\nEOFTIKTOK",
         "description": "Save TikTok script to GitHub repo"
       },
       "id": "save-tiktok-github",
@@ -435,7 +443,7 @@
     },
     {
       "parameters": {
-        "command": "cd /c/Users/user/Desktop/n8n && git add devi-content/week-{{ $json.week }}/ && git commit -m \"💜 Devi Week {{ $json.week }} content - $(date +%Y-%m-%d)\" && echo \"✅ Content saved to devi-content/week-{{ $json.week }}/\"",
+        "command": "cd /c/Users/user/Desktop/n8n && git add devi-content/week-{{ $json.week_number }}/ && git commit -m \"💜 Devi Week {{ $json.week_number }} content - $(date +%Y-%m-%d)\" && echo \"✅ Content saved to devi-content/week-{{ $json.week_number }}/\"",
         "description": "Commit Devi content to GitHub"
       },
       "id": "commit-github",
@@ -511,16 +519,19 @@
       ]]
     },
     "Devi Blog Post Generator": {
-      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Save Blog to GitHub", "type": "main", "index": 0}]]
     },
     "Devi Instagram Script Generator": {
-      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 1}]]
+      "main": [[{"node": "Format Instagram for Save", "type": "main", "index": 0}]]
     },
     "Devi TikTok Script Generator": {
-      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 2}]]
+      "main": [[{"node": "Format TikTok for Save", "type": "main", "index": 0}]]
     },
-    "🔀 Merge All Devi Content": {
-      "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
+    "Format Instagram for Save": {
+      "main": [[{"node": "💾 Save Instagram to GitHub", "type": "main", "index": 0}]]
+    },
+    "Format TikTok for Save": {
+      "main": [[{"node": "💾 Save TikTok to GitHub", "type": "main", "index": 0}]]
     },
     "💾 Prepare Content for GitHub": {
       "main": [[
