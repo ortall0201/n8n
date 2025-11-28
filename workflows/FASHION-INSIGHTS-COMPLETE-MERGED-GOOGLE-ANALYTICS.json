@@ -292,6 +292,19 @@
     },
     {
       "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-all-content",
+      "name": "🔀 Merge All Devi Content",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [3120, 250],
+      "notes": "Combines blog, Instagram, and TikTok content into one object"
+    },
+    {
+      "parameters": {
         "jsCode": "// DEVI INSTAGRAM CAROUSEL SCRIPT GENERATOR - WITH NEWSLETTER CTA\nconst content = $json;\n\nconst trendSlides = content.trends.slice(0, 3).map((trend, i) => ({\n  slide: i + 3,\n  type: 'trend',\n  text: 'Trend #' + (i + 1) + '\\n\\n' + trend,\n  design_notes: 'Product image or influencer screenshot, Devi commentary overlay',\n  product: content.products[i] || null,\n  caption: ''\n}));\n\nconst productList = content.products.slice(0, 3).map((p, i) => (i + 1) + '. ' + p.name + ' - ' + p.price).join('\\n');\n\nconst slides = [\n  {\n    slide: 1,\n    type: 'cover',\n    text: 'This Week in Fashion 💜\\n\\nWeek ' + content.week_number + ': ' + content.week_label,\n    design_notes: 'Devi portrait with pastel background, week number overlay',\n    caption: ''\n  },\n  {\n    slide: 2,\n    type: 'intro',\n    text: 'Hey loves!\\n\\nI analyzed ' + content.posts_analyzed + ' posts this week.\\n\\nHere\\'s what everyone\\'s wearing 👇',\n    design_notes: 'Text slide with pastel gradient',\n    caption: ''\n  },\n  ...trendSlides,\n  {\n    slide: 6,\n    type: 'products',\n    text: 'Shop These Looks 💜\\n\\n' + productList + '\\n\\nLink in bio!',\n    design_notes: 'Product grid with prices',\n    caption: ''\n  },\n  {\n    slide: 7,\n    type: 'cta',\n    text: 'Get the full breakdown\\n\\n✨ Blog post\\n💌 Newsletter\\n🎤 Voice chat\\n\\nLink in bio → @devine.me',\n    design_notes: 'Devi portrait with CTA text overlay, warm inviting aesthetic',\n    caption: ''\n  }\n];\n\nconst introText = content.intro.split('\\n\\n')[1] || 'This week\\'s fashion trends are 🔥';\nconst trendList = content.trends.slice(0, 3).map((t) => '→ ' + t).join('\\n');\n\nconst igCaption = content.week_label.toUpperCase() + ' 💜\\n\\n' + introText + '\\n\\nSwipe to see:\\n' + trendList + '\\n\\n💌 Want weekly fashion insights in your inbox? Link in bio to subscribe!\\n\\nFull blog post + product links also in bio! ✨\\n\\n#fashiontrends #weeklyinspo #styleinspo #fashionblogger #ootd #fashionista #trendreport #devinevibes';\n\nconst igScript = {\n  platform: 'Instagram',\n  format: 'Carousel',\n  slides: slides,\n  caption: igCaption,\n  hashtags: ['fashiontrends', 'weeklyinspo', 'styleinspo', 'fashionblogger', 'ootd', 'fashionista', 'trendreport', 'devinevibes'],\n  cta: 'Link in bio for newsletter + full breakdown',\n  post_time: 'Monday 10 AM',\n  issue_date: content.issue_date\n};\n\nreturn [{ json: { ...content, ig_script: igScript } }];"
       },
       "id": "devi-ig-generator",
@@ -499,12 +512,15 @@
       ]]
     },
     "Devi Blog Post Generator": {
-      "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
+      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 0}]]
     },
     "Devi Instagram Script Generator": {
-      "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
+      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 1}]]
     },
     "Devi TikTok Script Generator": {
+      "main": [[{"node": "🔀 Merge All Devi Content", "type": "main", "index": 2}]]
+    },
+    "🔀 Merge All Devi Content": {
       "main": [[{"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}]]
     },
     "💾 Prepare Content for GitHub": {
