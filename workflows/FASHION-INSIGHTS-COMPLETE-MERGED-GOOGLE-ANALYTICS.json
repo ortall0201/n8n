@@ -344,7 +344,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// LOG NEWSLETTER STATS TO GOOGLE SHEETS (Simplified without Bitly)\nconst content = $('Devi Affiliate Link Processor').first().json;\nconst subscribers = $('Filter Active Subscribers').all();\nconst workflowConfig = $('🤖 Workflow Controller Agent').first().json;\n\nconst weekNumber = content.week_number;\nconst issueDate = content.issue_date;\nconst emailsSent = subscribers.length;\n\n// Prepare Overview row\nconst overviewRow = {\n  week_number: weekNumber,\n  issue_date: issueDate,\n  emails_sent: emailsSent,\n  newsletter_url: workflowConfig.newsletter_url,\n  top_trends: content.trends.slice(0, 3).join(', '),\n  top_product: content.products[0]?.name || 'N/A',\n  tracking_method: 'Google Analytics (UTM)',\n  timestamp: new Date().toISOString()\n};\n\nconsole.log(`📊 ANALYTICS: Logged week ${weekNumber}, ${emailsSent} emails sent, tracking via Google Analytics`);\n\nreturn [{\n  json: {\n    overview: overviewRow\n  }\n}];"
+        "jsCode": "// LOG NEWSLETTER STATS TO GOOGLE SHEETS (Simplified without Bitly)\nconst content = $('Devi Affiliate Link Processor').first().json;\nconst subscribers = $('Filter Active Subscribers').all();\nconst workflowConfig = $('🤖 Workflow Controller Agent').first().json;\n\nconst weekNumber = content.week_number;\nconst issueDate = content.issue_date;\nconst emailsSent = subscribers.length;\n\nconsole.log(`📊 ANALYTICS: Logged week ${weekNumber}, ${emailsSent} emails sent, tracking via Google Analytics`);\n\n// Return data directly (not wrapped in 'overview')\nreturn [{\n  json: {\n    week_number: weekNumber,\n    issue_date: issueDate,\n    emails_sent: emailsSent,\n    newsletter_url: workflowConfig.newsletter_url,\n    top_trends: content.trends.slice(0, 3).join(', '),\n    top_product: content.products[0]?.name || 'N/A',\n    tracking_method: 'Google Analytics (UTM)',\n    timestamp: new Date().toISOString()\n  }\n}];"
       },
       "id": "prepare-analytics-log",
       "name": "📊 Prepare Analytics for Google Sheets",
@@ -369,14 +369,14 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "week_number": "={{ $json.overview.week_number }}",
-            "issue_date": "={{ $json.overview.issue_date }}",
-            "emails_sent": "={{ $json.overview.emails_sent }}",
-            "newsletter_url": "={{ $json.overview.newsletter_url }}",
-            "top_trends": "={{ $json.overview.top_trends }}",
-            "top_product": "={{ $json.overview.top_product }}",
-            "tracking_method": "={{ $json.overview.tracking_method }}",
-            "timestamp": "={{ $json.overview.timestamp }}"
+            "week_number": "={{ $json.week_number }}",
+            "issue_date": "={{ $json.issue_date }}",
+            "emails_sent": "={{ $json.emails_sent }}",
+            "newsletter_url": "={{ $json.newsletter_url }}",
+            "top_trends": "={{ $json.top_trends }}",
+            "top_product": "={{ $json.top_product }}",
+            "tracking_method": "={{ $json.tracking_method }}",
+            "timestamp": "={{ $json.timestamp }}"
           }
         },
         "options": {}
