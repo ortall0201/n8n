@@ -1,0 +1,221 @@
+{
+  "week_number": 1,
+  "generated_at": "2025-11-29T14:53:00.479Z",
+  "qa_count": 23,
+  "version": "v1",
+  "chatbot": "Devi",
+  "qa_pairs": [
+    {
+      "keywords": [
+        "trending",
+        "trends",
+        "hot",
+        "popular",
+        "whats new"
+      ],
+      "question": "What's trending this week?",
+      "answer": "Hey loves! This week, the buzz is all about the excitement from Paris and Milan Fashion Weeks. Influencers like @voguearabia and @sam_tsan are showcasing stunning high fashion mixed with personal style 💜.",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "trending",
+        "latest",
+        "now"
+      ],
+      "question": "What are the latest fashion trends?",
+      "answer": "Gorgeous, this week is all about Casual Chic! Influencers are rocking relaxed yet stylish looks that emphasize comfort without sacrificing aesthetics. Think chic everyday outfits! 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "trending",
+        "hot"
+      ],
+      "question": "What are the hot styles right now?",
+      "answer": "Right now, nostalgia is in! Influencers like @alexachung and @burberry are embracing playful vibes, encouraging you to celebrate the whimsical moments in life. How fun is that? 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "trending",
+        "latest"
+      ],
+      "question": "What’s new in fashion this week?",
+      "answer": "This week, it's all about blending fashion with personal stories! Influencers like @camilacoelho and @chiaraferragni are inspiring us with their journeys and family moments. Embrace your individuality! 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "popular",
+        "trending"
+      ],
+      "question": "What styles are popular now?",
+      "answer": "Loves, oversized blazers are a must-have this week! Pair them with chic basics for a stylish yet comfortable look. Everyone's talking about them! 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "now",
+        "this week"
+      ],
+      "question": "What should I wear this week?",
+      "answer": "This week, go for warm earth tones or soft pastels. They’ll keep you looking fresh and stylish while capturing the cozy vibe of the season! 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": [
+        "buy",
+        "shop",
+        "product"
+      ],
+      "question": "Where can I buy an oversized blazer?",
+      "answer": "You can snag the fabulous Oversized Blazer from Zara for just $89! It's perfect for that chic look we all adore 💜.",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "recommend",
+        "link"
+      ],
+      "question": "Can you recommend a product for this season?",
+      "answer": "Absolutely, gorgeous! The Metallic Boots from Mango are hot this week for $129. They add a perfect edgy touch to any outfit! 💜",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "buy",
+        "shop"
+      ],
+      "question": "What’s a good bag to buy right now?",
+      "answer": "The Leather Crossbody from H&M for $69 is a stylish choice! It’s versatile and perfect for day or night outings. Grab it while you can! 💜",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "product",
+        "where"
+      ],
+      "question": "Where can I find cozy fashion items?",
+      "answer": "Check out @madewell for their casual chic collection. They're featuring relaxed styles that look great and feel comfy! 💜",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "shop",
+        "product"
+      ],
+      "question": "What’s a must-have accessory this week?",
+      "answer": "Loves, the Leather Crossbody from H&M is a must-have! It’s practical and stylish at $69. Perfect for any outfit! 💜",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "buy",
+        "product"
+      ],
+      "question": "What shoes should I buy right now?",
+      "answer": "You can't go wrong with the Metallic Boots from Mango for $129! They add a fun edge to any look. Shop now, gorgeous! 💜",
+      "category": "products"
+    },
+    {
+      "keywords": [
+        "color",
+        "style"
+      ],
+      "question": "What colors are in style this week?",
+      "answer": "This week, soft pastels and warm earth tones are super trendy! They bring a cozy touch to your wardrobe. Mix and match for a beautiful look! 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "wear",
+        "color"
+      ],
+      "question": "What color should I wear to look trendy?",
+      "answer": "Go for warm earth tones, loves! They’re not only stylish but also incredibly versatile for fall outfits. You’ll look fabulous! 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "match",
+        "coordinate"
+      ],
+      "question": "How can I coordinate my outfits this week?",
+      "answer": "Gorgeous, pair your oversized blazer with soft pastel tops for a trendy and chic look! Mix textures for added style! 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "color",
+        "style"
+      ],
+      "question": "What color combinations are popular now?",
+      "answer": "Soft pastels with classic black and white are a winning combo this week! They create a sophisticated yet fresh vibe 💜.",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "wear",
+        "style"
+      ],
+      "question": "What should I wear for a casual outing?",
+      "answer": "For a casual outing, wear comfortable but chic outfits—think a relaxed top with an oversized blazer. Pair with denim for a stylish combo! 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "match",
+        "coordinate"
+      ],
+      "question": "How do I match my accessories with my outfit?",
+      "answer": "Gorgeous, coordinate with metallic accents from your boots! They can elevate any outfit and add a touch of glam. 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": [
+        "budget",
+        "cheap"
+      ],
+      "question": "What’s an affordable fashion item this week?",
+      "answer": "The Leather Crossbody from H&M at $69 is both affordable and stylish! It’s perfect for any occasion. Grab yours, loves! 💜",
+      "category": "price"
+    },
+    {
+      "keywords": [
+        "expensive",
+        "worth"
+      ],
+      "question": "Is it worth buying high-end fashion?",
+      "answer": "High-end pieces can be worth it if they fit your personal style and last over time! Look for unique pieces that you’ll adore! 💜",
+      "category": "price"
+    },
+    {
+      "keywords": [
+        "price",
+        "affordable"
+      ],
+      "question": "What’s a good price range for trendy items?",
+      "answer": "Look for trendy items in the $50-$150 range! You can find great pieces like the $89 oversized blazer that won’t break the bank! 💜",
+      "category": "price"
+    },
+    {
+      "keywords": [
+        "cheap",
+        "budget"
+      ],
+      "question": "What’s the best budget-friendly outfit idea?",
+      "answer": "Loves, try pairing a budget-friendly oversized blazer with your favorite jeans! It’s chic and won’t cost a fortune! 💜",
+      "category": "price"
+    },
+    {
+      "keywords": [
+        "expensive",
+        "worth"
+      ],
+      "question": "Are expensive shoes worth the investment?",
+      "answer": "High-quality shoes like the Metallic Boots can be worth the splurge! They elevate your look and last longer. Invest wisely, gorgeous! 💜",
+      "category": "price"
+    }
+  ]
+}
