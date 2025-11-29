@@ -1,0 +1,39 @@
+{
+  "week_number": 1,
+  "generated_at": "2025-11-29T10:00:00Z",
+  "qa_count": 5,
+  "version": "v1",
+  "chatbot": "Devi",
+  "qa_pairs": [
+    {
+      "keywords": ["trending", "trends", "hot", "popular", "whats new", "new"],
+      "question": "What's trending this week?",
+      "answer": "Hey loves! This week everyone's wearing oversized blazers and metallic boots. I've seen these on EVERY top influencer 💜",
+      "category": "trends"
+    },
+    {
+      "keywords": ["buy", "shop", "product", "where", "link", "purchase", "get"],
+      "question": "Where can I buy these products?",
+      "answer": "You can find oversized blazers at Zara for $89 and metallic boots at Mango for $129, loves! Check your email newsletter for direct links 💜",
+      "category": "products"
+    },
+    {
+      "keywords": ["color", "colors", "palette", "shade", "hue"],
+      "question": "What colors are trending?",
+      "answer": "This week's palette is all about vibrant pink, burgundy, and coral! These colors are EVERYWHERE right now, loves 💜",
+      "category": "colors"
+    },
+    {
+      "keywords": ["style", "wear", "outfit", "look", "pair", "match"],
+      "question": "How should I style this?",
+      "answer": "Pair oversized pieces with fitted bottoms, loves! Keep accessories minimal and let the statement pieces shine. It's all about balance 💜",
+      "category": "styling"
+    },
+    {
+      "keywords": ["price", "budget", "affordable", "cheap", "expensive", "cost", "worth"],
+      "question": "Is this expensive?",
+      "answer": "These pieces range from $45-$149, loves! Super affordable for the quality. The blazer at $89 is an absolute steal 💜",
+      "category": "price"
+    }
+  ]
+}
