@@ -396,17 +396,6 @@
     },
     {
       "parameters": {
-        "jsCode": "// PREPARE CONTENT FOR GITHUB SAVE\n// N8N BEST PRACTICE: Reference parallel nodes directly using $('NodeName').first().json\n\n// Get data from the three generator nodes that ran in parallel\nconst blogData = $('Devi Blog Post Generator').first().json;\nconst igData = $('Devi Instagram Script Generator').first().json;\nconst tiktokData = $('Devi TikTok Script Generator').first().json;\n\nconsole.log('🔍 DEBUG - Blog has blog_html?', !!blogData.blog_html);\nconsole.log('🔍 DEBUG - IG has ig_script?', !!igData.ig_script);\nconsole.log('🔍 DEBUG - TikTok has tiktok_script?', !!tiktokData.tiktok_script);\n\nconst weekNumber = blogData.week_number || igData.week_number || tiktokData.week_number;\n\n// Validate we have all required data\nif (!blogData.blog_html) {\n  throw new Error(`❌ Missing blog_html! Available in blog node: ${Object.keys(blogData).join(', ')}`);\n}\nif (!igData.ig_script) {\n  throw new Error(`❌ Missing ig_script! Available in IG node: ${Object.keys(igData).join(', ')}`);\n}\nif (!tiktokData.tiktok_script) {\n  throw new Error(`❌ Missing tiktok_script! Available in TikTok node: ${Object.keys(tiktokData).join(', ')}`);\n}\n\n// Build Instagram text from ig_script\nconst igScript = igData.ig_script;\nconst igText = `INSTAGRAM CAROUSEL - WEEK ${weekNumber}\n${'='.repeat(50)}\n\nCAPTION:\n${igScript.caption}\n\n${'='.repeat(50)}\n\nSLIDES:\n${igScript.slides.map(s => `\nSlide ${s.slide} (${s.type}):\nText: ${s.text}\nDesign: ${s.design_notes}`).join('\\n\\n')}\n\n${'='.repeat(50)}\n\nHASHTAGS: ${igScript.hashtags.join(' #')}\nPOST TIME: ${igScript.post_time}\nCTA: ${igScript.cta}`;\n\n// Build TikTok text from tiktok_script\nconst tiktokScript = tiktokData.tiktok_script;\nconst tiktokText = `TIKTOK/REELS VIDEO - WEEK ${weekNumber}\n${'='.repeat(50)}\n\nVIDEO SCRIPT:\n\nHOOK (0-3s):\n${tiktokScript.script.hook.text}\nVisual: ${tiktokScript.script.hook.visual}\n\nBODY (4-25s):\n${tiktokScript.script.body.text}\nVisual: ${tiktokScript.script.body.visual}\n\nCTA (26-30s):\n${tiktokScript.script.cta.text}\nVisual: ${tiktokScript.script.cta.visual}\n\n${'='.repeat(50)}\n\nCAPTION: ${tiktokScript.caption}\nHASHTAGS: ${tiktokScript.hashtags.join(' #')}\nSOUNDS: ${tiktokScript.sounds.join(', ')}\nPOST TIME: ${tiktokScript.post_time}`;\n\nconsole.log(`✅ Successfully prepared content for GitHub! Week ${weekNumber}`);\n\nreturn [{\n  json: {\n    week_number: weekNumber,\n    blog_html: blogData.blog_html,\n    instagram_text: igText,\n    tiktok_text: tiktokText\n  }\n}];"
-      },
-      "id": "prepare-github-content",
-      "name": "💾 Prepare Content for GitHub",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [3340, 200],
-      "notes": "Prepares all content for GitHub save"
-    },
-    {
-      "parameters": {
         "resource": "file",
         "owner": "ortall0201",
         "repository": "n8n",
@@ -605,7 +594,7 @@
       ]]
     },
     "Devi Blog Post Generator": {
-      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Save Blog to GitHub", "type": "main", "index": 0}]]
     },
     "Devi Instagram Script Generator": {
       "main": [[{"node": "Format Instagram for Save", "type": "main", "index": 0}]]
@@ -614,23 +603,15 @@
       "main": [[{"node": "Format TikTok for Save", "type": "main", "index": 0}]]
     },
     "Format Instagram for Save": {
-      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Save Instagram to GitHub", "type": "main", "index": 0}]]
     },
     "Format TikTok for Save": {
-      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Save TikTok to GitHub", "type": "main", "index": 0}]]
     },
     "Devi Affiliate Link Processor": {
       "main": [[
-        {"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0},
         {"node": "📊 Prepare Analytics for Google Sheets", "type": "main", "index": 0},
         {"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0}
-      ]]
-    },
-    "💾 Prepare Content for GitHub": {
-      "main": [[
-        {"node": "💾 Save Blog to GitHub", "type": "main", "index": 0},
-        {"node": "💾 Save Instagram to GitHub", "type": "main", "index": 0},
-        {"node": "💾 Save TikTok to GitHub", "type": "main", "index": 0}
       ]]
     },
     "💾 Save Blog to GitHub": {
