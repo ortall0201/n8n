@@ -612,6 +612,42 @@
         }
       },
       "notes": "Saves Q&A to GitHub for Lovable chatbot to fetch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔄 FORMAT Q&A FOR LOVABLE APP UPDATE\nconst qaData = $json;\n\n// Create JavaScript code that Lovable can inject into the chatbot\nconst chatbotCode = `\n// AUTO-GENERATED Q&A DATA - Week ${qaData.week_number}\n// Generated: ${qaData.generated_at}\n// DO NOT EDIT MANUALLY - Updated weekly by n8n workflow\n\nconst deviQAData = ${JSON.stringify(qaData.qa_pairs, null, 2)};\n\n// Function to find answer based on user input\nfunction findDeviAnswer(userInput) {\n  const words = userInput.toLowerCase().split(' ');\n  \n  for (const qa of deviQAData) {\n    const matchedKeyword = qa.keywords.find(keyword => \n      words.includes(keyword.toLowerCase())\n    );\n    \n    if (matchedKeyword) {\n      return qa.answer;\n    }\n  }\n  \n  return \"Sorry loves, I don't know that one yet! 💜 Try asking about trends, products, or styling tips!\";\n}\n\n// Export for use in chatbot\nif (typeof module !== 'undefined' && module.exports) {\n  module.exports = { deviQAData, findDeviAnswer };\n}\n`;\n\n// Lovable webhook payload\nconst lovablePayload = {\n  project_id: 'YOUR_LOVABLE_PROJECT_ID',\n  action: 'update_chatbot_data',\n  data: {\n    week_number: qaData.week_number,\n    qa_pairs: qaData.qa_pairs,\n    generated_at: qaData.generated_at,\n    code: chatbotCode\n  },\n  metadata: {\n    source: 'n8n-fashion-insights',\n    version: qaData.version\n  }\n};\n\nreturn [{ \n  json: {\n    ...qaData,\n    lovable_payload: lovablePayload,\n    chatbot_code: chatbotCode\n  } \n}];"
+      },
+      "id": "format-qa-lovable",
+      "name": "🔄 Format Q&A for Lovable",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3560, 500],
+      "notes": "Prepares Q&A data for Lovable app injection"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lovable.dev/v1/projects/YOUR_PROJECT_ID/update",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer YOUR_LOVABLE_API_TOKEN"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.lovable_payload) }}",
+        "options": {}
+      },
+      "id": "push-qa-lovable",
+      "name": "💜 Push Q&A to Lovable App",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3780, 500],
+      "notes": "Automatically updates Lovable chatbot with new Q&A"
     }
   ],
   "connections": {
@@ -724,6 +760,12 @@
     },
     "📝 Parse Q&A Response": {
       "main": [[{"node": "💾 Save Q&A to GitHub", "type": "main", "index": 0}]]
+    },
+    "💾 Save Q&A to GitHub": {
+      "main": [[{"node": "🔄 Format Q&A for Lovable", "type": "main", "index": 0}]]
+    },
+    "🔄 Format Q&A for Lovable": {
+      "main": [[{"node": "💜 Push Q&A to Lovable App", "type": "main", "index": 0}]]
     }
   },
   "settings": {"executionOrder": "v1"},
