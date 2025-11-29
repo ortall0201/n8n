@@ -1,0 +1,334 @@
+{
+  "name": "🎨 Devi Identity Setup (One-Time) - Smart Bypass",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "🚀 Manual Trigger - Run Once",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ STEP 1: VERIFY ACCOUNTS\nconst checklist = {\n  accounts: [\n    { name: 'Instagram @devine.me', status: '⏳ Pending', url: 'https://instagram.com' },\n    { name: 'TikTok Account', status: '⏳ Pending', url: 'https://tiktok.com' },\n    { name: 'Midjourney Pro', status: '⏳ Pending', url: 'https://midjourney.com/account' },\n    { name: 'HeyGen Account', status: '⏳ Pending', url: 'https://heygen.com' },\n    { name: 'ElevenLabs Account', status: '⏳ Pending', url: 'https://elevenlabs.io' },\n    { name: 'GitHub Repo Access', status: '⏳ Pending', url: 'https://github.com/ortall0201/n8n' }\n  ],\n  instructions: [\n    '1. Log into each account above',\n    '2. Verify API access is enabled',\n    '3. Once ALL accounts are ready, proceed to next node'\n  ],\n  estimatedTime: '15 minutes',\n  cost: '$0 (just verification)'\n};\n\nreturn { json: { step: 'verify-accounts', checklist, status: 'ready-to-proceed', timestamp: new Date().toISOString() } };"
+      },
+      "id": "verify-accounts",
+      "name": "✅ Verify Accounts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔍 CHECK IF FACE IMAGES ALREADY EXIST\nconst githubBaseUrl = 'https://raw.githubusercontent.com/ortall0201/n8n/master/devi-identity';\n\nasync function checkFaceExists() {\n  try {\n    const response = await fetch(`${githubBaseUrl}/face-primary.png`);\n    if (response.ok) {\n      console.log('✅ Face images already exist! Skipping Midjourney generation.');\n      return { faceExists: true, message: '✅ Face already exists', action: 'Skip Midjourney (save $30)', faceUrl: `${githubBaseUrl}/face-primary.png` };\n    } else {\n      console.log('❌ Face images not found. Need to generate.');\n      return { faceExists: false, message: '❌ Face not found', action: 'Proceed to Midjourney' };\n    }\n  } catch (error) {\n    return { faceExists: false, message: '❌ Could not check GitHub', action: 'Proceed to Midjourney' };\n  }\n}\n\nconst result = await checkFaceExists();\nreturn { json: { step: 'check-face-exists', ...result, timestamp: new Date().toISOString() } };"
+      },
+      "id": "check-face-exists",
+      "name": "🔍 Check if Face Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.faceExists }}", "value2": true }]
+        }
+      },
+      "id": "if-face-exists",
+      "name": "❓ Face Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ FACE ALREADY EXISTS - SKIP\nconst faceData = $('🔍 Check if Face Exists').first().json;\nreturn { json: { step: 'skip-midjourney', status: '✅ Skipped', faceUrl: faceData.faceUrl, moneySaved: '$30', message: 'Using existing face images', timestamp: new Date().toISOString() } };"
+      },
+      "id": "skip-midjourney",
+      "name": "✅ Skip Midjourney",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🎨 GENERATE MIDJOURNEY PROMPTS\nconst basePrompt = `Professional fashion portrait of a 22-25 year old Korean woman, natural beauty, soft editorial lighting, Seoul minimalist aesthetic, warm expression, modern K-fashion style, shot on medium format camera, soft focus background, pastel tones, high fashion photography --ar 1:1 --style raw --v 6`;\n\nconst prompts = [\n  { id: 1, type: 'primary', prompt: basePrompt, purpose: 'Main Devi face' },\n  { id: 2, type: 'variation', prompt: basePrompt.replace('soft editorial', 'natural daylight'), purpose: 'Outdoor' },\n  { id: 3, type: 'variation', prompt: basePrompt.replace('warm expression', 'confident smile'), purpose: 'Promotional' }\n];\n\nconst instructions = {\n  step1: '1. Go to Midjourney Discord',\n  step2: '2. Use /imagine with PROMPT 1',\n  step3: '3. Pick best, upscale, download as: devi-face-primary.png',\n  step4: '4. Generate variations 2-3 with same seed',\n  step5: '5. MANUAL: Upload to GitHub at devi-identity/ folder',\n  step6: '6. (Images cannot be auto-uploaded, too large for API)',\n  estimatedTime: '30-45 min',\n  estimatedCost: '$30 or FREE (trial)'\n};\n\nreturn { json: { step: 'generate-midjourney-prompts', prompts, instructions, note: 'Face images must be uploaded manually to GitHub', timestamp: new Date().toISOString() } };"
+      },
+      "id": "generate-mj-prompts",
+      "name": "🎨 Generate Midjourney Prompts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 📸 FACE UPLOAD INSTRUCTIONS\nreturn { json: { step: 'upload-faces', instructions: ['After Midjourney: Upload images to GitHub devi-identity/ manually', 'Images are too large for GitHub API node (>1MB)', 'Use GitHub web UI or git command line'], timestamp: new Date().toISOString() } };"
+      },
+      "id": "upload-faces-note",
+      "name": "📸 Face Upload Note",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll"
+      },
+      "id": "merge-face-paths",
+      "name": "🔀 Merge (Face Done)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔍 CHECK IF VOICE CONFIG EXISTS\nconst githubBaseUrl = 'https://raw.githubusercontent.com/ortall0201/n8n/master/devi-identity';\n\nasync function checkVoiceExists() {\n  try {\n    const response = await fetch(`${githubBaseUrl}/voice-config.json`);\n    if (response.ok) {\n      const voiceConfig = await response.json();\n      console.log('✅ Voice config exists! ID:', voiceConfig.voice_id);\n      return { voiceExists: true, message: '✅ Voice exists', action: 'Skip setup', voiceConfig };\n    } else {\n      return { voiceExists: false, message: '❌ Voice not configured', action: 'Proceed to setup' };\n    }\n  } catch (error) {\n    return { voiceExists: false, message: '❌ Could not check', action: 'Proceed to setup' };\n  }\n}\n\nconst result = await checkVoiceExists();\nreturn { json: { step: 'check-voice-exists', ...result, timestamp: new Date().toISOString() } };"
+      },
+      "id": "check-voice-exists",
+      "name": "🔍 Check if Voice Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.voiceExists }}", "value2": true }]
+        }
+      },
+      "id": "if-voice-exists",
+      "name": "❓ Voice Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ VOICE EXISTS - SKIP\nconst voiceData = $('🔍 Check if Voice Exists').first().json;\nreturn { json: { step: 'skip-voice-setup', status: '✅ Skipped', voiceConfig: voiceData.voiceConfig, message: 'Using existing voice', timestamp: new Date().toISOString() } };"
+      },
+      "id": "skip-voice-setup",
+      "name": "✅ Skip Voice Setup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🎙️ VOICE SETUP INSTRUCTIONS\nreturn { json: { step: 'voice-instructions', instructions: { step1: '1. Go to elevenlabs.io', step2: '2. Add Voice → Instant Clone', step3: '3. Record 1-2 min (warm, friendly)', step4: '4. Name: Devi Fashion Influencer', step5: '5. Copy Voice ID', step6: '6. Paste in next node' }, cost: '$5/month', timestamp: new Date().toISOString() } };"
+      },
+      "id": "voice-setup-instructions",
+      "name": "🎙️ Voice Instructions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 💾 PREPARE VOICE CONFIG\nconst VOICE_ID = 'KkWaX98mgTKofRGe7rVF';\n\nif (VOICE_ID === 'YOUR_ELEVENLABS_VOICE_ID_HERE') {\n  return { json: { step: 'save-voice-config', status: '⚠️ NEEDS INPUT', message: 'Update this node with Voice ID', instructions: ['1. Open this node', '2. Replace YOUR_ELEVENLABS_VOICE_ID_HERE', '3. Save and re-run'] } };\n}\n\nconst voiceConfig = {\n  voice_id: VOICE_ID,\n  voice_name: 'Devi',\n  platform: 'ElevenLabs',\n  created_at: new Date().toISOString(),\n  settings: { stability: 0.5, similarity_boost: 0.75 }\n};\n\nreturn { json: voiceConfig };"
+      },
+      "id": "prepare-voice-config",
+      "name": "💾 Prepare Voice Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2250, 400]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "ortall0201",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "name"
+        },
+        "filePath": "devi-identity/voice-config.json",
+        "fileContent": "={{ JSON.stringify($json, null, 2) }}",
+        "commitMessage": "🎙️ Devi Identity - Voice Configuration",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
+      },
+      "id": "save-voice-to-github",
+      "name": "💾 Save Voice to GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [2450, 400],
+      "credentials": {
+        "githubApi": {
+          "id": "6xp0xF0taYi3GlIu",
+          "name": "GitHub account"
+        }
+      },
+      "notes": "Uses n8n GitHub node - auto uploads voice-config.json"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll"
+      },
+      "id": "merge-voice-paths",
+      "name": "🔀 Merge (Voice Done)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔍 CHECK IF AVATAR CONFIG EXISTS\nconst githubBaseUrl = 'https://raw.githubusercontent.com/ortall0201/n8n/master/devi-identity';\n\nasync function checkAvatarExists() {\n  try {\n    const response = await fetch(`${githubBaseUrl}/heygen-avatar-id.json`);\n    if (response.ok) {\n      const avatarConfig = await response.json();\n      console.log('✅ Avatar config exists! ID:', avatarConfig.avatar_id);\n      return { avatarExists: true, message: '✅ Avatar exists', action: 'Skip setup', avatarConfig };\n    } else {\n      return { avatarExists: false, message: '❌ Avatar not configured', action: 'Proceed to setup' };\n    }\n  } catch (error) {\n    return { avatarExists: false, message: '❌ Could not check', action: 'Proceed to setup' };\n  }\n}\n\nconst result = await checkAvatarExists();\nreturn { json: { step: 'check-avatar-exists', ...result, timestamp: new Date().toISOString() } };"
+      },
+      "id": "check-avatar-exists",
+      "name": "🔍 Check if Avatar Exists",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.avatarExists }}", "value2": true }]
+        }
+      },
+      "id": "if-avatar-exists",
+      "name": "❓ Avatar Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [3050, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ AVATAR EXISTS - SKIP\nconst avatarData = $('🔍 Check if Avatar Exists').first().json;\nreturn { json: { step: 'skip-avatar-setup', status: '✅ Skipped', avatarConfig: avatarData.avatarConfig, message: 'Using existing avatar', timestamp: new Date().toISOString() } };"
+      },
+      "id": "skip-avatar-setup",
+      "name": "✅ Skip Avatar Setup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3250, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🎬 AVATAR SETUP INSTRUCTIONS\nreturn { json: { step: 'avatar-instructions', instructions: { step1: '1. Go to app.heygen.com', step2: '2. Avatars → Create → Photo Avatar', step3: '3. Upload devi-face-primary.png', step4: '4. Wait 5-10 min', step5: '5. Copy Avatar ID', step6: '6. Paste in next node' }, cost: '$29/month', timestamp: new Date().toISOString() } };"
+      },
+      "id": "avatar-setup-instructions",
+      "name": "🎬 Avatar Instructions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3250, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 💾 PREPARE AVATAR CONFIG\nconst AVATAR_ID = 'YOUR_HEYGEN_AVATAR_ID_HERE';\n\nif (AVATAR_ID === 'YOUR_HEYGEN_AVATAR_ID_HERE') {\n  return { json: { step: 'save-avatar-config', status: '⚠️ NEEDS INPUT', message: 'Update this node with Avatar ID', instructions: ['1. Open this node', '2. Replace YOUR_HEYGEN_AVATAR_ID_HERE', '3. Save and re-run'] } };\n}\n\nconst avatarConfig = {\n  avatar_id: AVATAR_ID,\n  avatar_name: 'Devi',\n  platform: 'HeyGen',\n  created_at: new Date().toISOString(),\n  settings: { aspect_ratio: '9:16', quality: '1080p' }\n};\n\nreturn { json: avatarConfig };"
+      },
+      "id": "prepare-avatar-config",
+      "name": "💾 Prepare Avatar Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3450, 400]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "ortall0201",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "name"
+        },
+        "filePath": "devi-identity/heygen-avatar-id.json",
+        "fileContent": "={{ JSON.stringify($json, null, 2) }}",
+        "commitMessage": "🎬 Devi Identity - Avatar Configuration",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
+      },
+      "id": "save-avatar-to-github",
+      "name": "💾 Save Avatar to GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [3650, 400],
+      "credentials": {
+        "githubApi": {
+          "id": "6xp0xF0taYi3GlIu",
+          "name": "GitHub account"
+        }
+      },
+      "notes": "Uses n8n GitHub node - auto uploads heygen-avatar-id.json"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll"
+      },
+      "id": "merge-avatar-paths",
+      "name": "🔀 Merge (Avatar Done)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [3850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 📝 FINAL VERIFICATION\nconst githubBaseUrl = 'https://raw.githubusercontent.com/ortall0201/n8n/master/devi-identity';\n\nasync function loadAllAssets() {\n  const assets = { face: { exists: false }, voice: { exists: false }, avatar: { exists: false } };\n  \n  try {\n    const faceResponse = await fetch(`${githubBaseUrl}/face-primary.png`);\n    assets.face.exists = faceResponse.ok;\n    if (faceResponse.ok) assets.face.url = `${githubBaseUrl}/face-primary.png`;\n  } catch (e) {}\n  \n  try {\n    const voiceResponse = await fetch(`${githubBaseUrl}/voice-config.json`);\n    if (voiceResponse.ok) {\n      assets.voice.exists = true;\n      assets.voice.config = await voiceResponse.json();\n    }\n  } catch (e) {}\n  \n  try {\n    const avatarResponse = await fetch(`${githubBaseUrl}/heygen-avatar-id.json`);\n    if (avatarResponse.ok) {\n      assets.avatar.exists = true;\n      assets.avatar.config = await avatarResponse.json();\n    }\n  } catch (e) {}\n  \n  return assets;\n}\n\nconst assets = await loadAllAssets();\n\nconst metadata = {\n  name: 'Devine (Devi)',\n  handle: '@devine.me',\n  created_at: new Date().toISOString(),\n  version: 'v1.0',\n  visual_identity: { exists: assets.face.exists, url: assets.face.url || 'NOT CREATED', status: assets.face.exists ? '✅' : '❌' },\n  voice_identity: { exists: assets.voice.exists, voice_id: assets.voice.config?.voice_id || 'NOT CREATED', status: assets.voice.exists ? '✅' : '❌' },\n  video_identity: { exists: assets.avatar.exists, avatar_id: assets.avatar.config?.avatar_id || 'NOT CREATED', status: assets.avatar.exists ? '✅' : '❌' },\n  all_ready: assets.face.exists && assets.voice.exists && assets.avatar.exists\n};\n\nreturn { json: { step: 'final-verification', metadata, timestamp: new Date().toISOString() } };"
+      },
+      "id": "final-verification",
+      "name": "📝 Final Verification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4050, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ✅ SETUP COMPLETE\nconst metadata = $('📝 Final Verification').first().json.metadata;\n\nconst report = {\n  status: metadata.all_ready ? '🎉 SETUP COMPLETE!' : '⚠️ PARTIAL SETUP',\n  timestamp: new Date().toISOString(),\n  summary: {\n    face: metadata.visual_identity.status + ' Visual identity',\n    voice: metadata.voice_identity.status + ' Voice identity',\n    avatar: metadata.video_identity.status + ' Video identity'\n  },\n  ready_for_automation: metadata.all_ready,\n  next_steps: [\n    !metadata.visual_identity.exists ? '❌ Upload face images to GitHub devi-identity/' : '✅ Face ready',\n    !metadata.voice_identity.exists ? '❌ Run workflow with Voice ID' : '✅ Voice ready',\n    !metadata.avatar_identity.exists ? '❌ Run workflow with Avatar ID' : '✅ Avatar ready',\n    metadata.all_ready ? '🎉 Import DEVI-WEEKLY-AUTOMATION workflow!' : '⏳ Complete remaining steps'\n  ],\n  how_to_resume: ['Run this workflow again', 'It SKIPS existing steps', 'Only pay for missing items', 'Safe to run multiple times'],\n  github_location: 'https://github.com/ortall0201/n8n/tree/master/devi-identity'\n};\n\nreturn { json: report };"
+      },
+      "id": "setup-complete",
+      "name": "✅ Setup Complete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4250, 300]
+    }
+  ],
+  "connections": {
+    "🚀 Manual Trigger - Run Once": { "main": [[{ "node": "✅ Verify Accounts", "type": "main", "index": 0 }]] },
+    "✅ Verify Accounts": { "main": [[{ "node": "🔍 Check if Face Exists", "type": "main", "index": 0 }]] },
+    "🔍 Check if Face Exists": { "main": [[{ "node": "❓ Face Already Exists?", "type": "main", "index": 0 }]] },
+    "❓ Face Already Exists?": { "main": [[{ "node": "✅ Skip Midjourney", "type": "main", "index": 0 }], [{ "node": "🎨 Generate Midjourney Prompts", "type": "main", "index": 0 }]] },
+    "✅ Skip Midjourney": { "main": [[{ "node": "🔀 Merge (Face Done)", "type": "main", "index": 0 }]] },
+    "🎨 Generate Midjourney Prompts": { "main": [[{ "node": "📸 Face Upload Note", "type": "main", "index": 0 }]] },
+    "📸 Face Upload Note": { "main": [[{ "node": "🔀 Merge (Face Done)", "type": "main", "index": 1 }]] },
+    "🔀 Merge (Face Done)": { "main": [[{ "node": "🔍 Check if Voice Exists", "type": "main", "index": 0 }]] },
+    "🔍 Check if Voice Exists": { "main": [[{ "node": "❓ Voice Already Exists?", "type": "main", "index": 0 }]] },
+    "❓ Voice Already Exists?": { "main": [[{ "node": "✅ Skip Voice Setup", "type": "main", "index": 0 }], [{ "node": "🎙️ Voice Instructions", "type": "main", "index": 0 }]] },
+    "✅ Skip Voice Setup": { "main": [[{ "node": "🔀 Merge (Voice Done)", "type": "main", "index": 0 }]] },
+    "🎙️ Voice Instructions": { "main": [[{ "node": "💾 Prepare Voice Config", "type": "main", "index": 0 }]] },
+    "💾 Prepare Voice Config": { "main": [[{ "node": "💾 Save Voice to GitHub", "type": "main", "index": 0 }]] },
+    "💾 Save Voice to GitHub": { "main": [[{ "node": "🔀 Merge (Voice Done)", "type": "main", "index": 1 }]] },
+    "🔀 Merge (Voice Done)": { "main": [[{ "node": "🔍 Check if Avatar Exists", "type": "main", "index": 0 }]] },
+    "🔍 Check if Avatar Exists": { "main": [[{ "node": "❓ Avatar Already Exists?", "type": "main", "index": 0 }]] },
+    "❓ Avatar Already Exists?": { "main": [[{ "node": "✅ Skip Avatar Setup", "type": "main", "index": 0 }], [{ "node": "🎬 Avatar Instructions", "type": "main", "index": 0 }]] },
+    "✅ Skip Avatar Setup": { "main": [[{ "node": "🔀 Merge (Avatar Done)", "type": "main", "index": 0 }]] },
+    "🎬 Avatar Instructions": { "main": [[{ "node": "💾 Prepare Avatar Config", "type": "main", "index": 0 }]] },
+    "💾 Prepare Avatar Config": { "main": [[{ "node": "💾 Save Avatar to GitHub", "type": "main", "index": 0 }]] },
+    "💾 Save Avatar to GitHub": { "main": [[{ "node": "🔀 Merge (Avatar Done)", "type": "main", "index": 1 }]] },
+    "🔀 Merge (Avatar Done)": { "main": [[{ "node": "📝 Final Verification", "type": "main", "index": 0 }]] },
+    "📝 Final Verification": { "main": [[{ "node": "✅ Setup Complete", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-29T00:00:00.000Z",
+  "versionId": "1"
+}

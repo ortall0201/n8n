@@ -49,6 +49,191 @@ Need help? Our community forum is the place to get support and connect with othe
 
 n8n is [fair-code](https://faircode.io) distributed under the [Sustainable Use License](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) and [n8n Enterprise License](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md).
 
+---
+
+## 💜 Devi AI Fashion Influencer Project
+
+This repository contains a complete AI influencer automation system called **Devi** (@devine.me), built entirely on n8n.
+
+### What is Devi?
+
+Devi is an AI fashion influencer that automatically:
+- Scrapes Instagram trends from top fashion influencers
+- Generates weekly fashion content (newsletter, blog, social posts, Q&A)
+- Creates AI voice and video using her consistent identity
+- Posts to Instagram, TikTok, and WordPress automatically
+- Maintains continuity by reading her own past content each week
+
+**Cost:** ~$13.50/week (~$54/month) for full automation
+**Platforms:** Instagram, TikTok, Blog, Newsletter
+**Tech Stack:** n8n + OpenAI + ElevenLabs + HeyGen + Bright Data + GitHub
+
+### Project Structure
+
+```
+├── workflows/
+│   ├── DEVI-SETUP-AUTOMATION.json           # One-time identity creation
+│   └── Fashion Insights - last version update 3  # Weekly automation (extend this)
+│
+├── devi-identity/                            # Devi's face, voice, avatar assets
+│   ├── face-primary.png
+│   ├── voice-config.json
+│   └── heygen-avatar-id.json
+│
+├── devi-content/                             # Weekly generated content
+│   └── week-X/
+│       ├── chatbot-qa.json
+│       ├── blog-post.html
+│       ├── instagram-video.mp4
+│       └── newsletter.html
+│
+└── docs/                                     # Complete documentation
+    ├── DEVI-AUTOMATION-RUNBOOK.md           # Operations guide (START HERE)
+    ├── DEVI-WEEKLY-AUTOMATION-GUIDE.md      # Node-by-node setup
+    ├── DEVI-API-INTEGRATIONS.md             # API credentials guide
+    ├── DEVI-90DAY-EXPERIMENT.md             # Testing plan
+    ├── DEVI-PERSONA.md                      # Devi's voice & personality
+    └── DEVI_SECURE_SYSTEM_PROMPT.md         # Security guidelines
+```
+
+### Quick Start
+
+#### 1. Run Setup Workflow (One Time)
+```bash
+# Import workflow
+n8n → Import → workflows/DEVI-SETUP-AUTOMATION.json
+
+# Execute workflow
+Follow instructions to create:
+- Devi face (Midjourney)
+- Voice clone (ElevenLabs)
+- Video avatar (HeyGen)
+```
+
+#### 2. Configure API Credentials
+See: `docs/DEVI-API-INTEGRATIONS.md`
+
+Required APIs:
+- OpenAI (content generation) - $4.25/week
+- ElevenLabs (voice) - $2/week
+- HeyGen (video) - $7.25/week
+- Bright Data (scraping) - $1.50/week
+- Instagram Graph API (auto-posting) - FREE
+- GitHub (storage) - FREE
+
+#### 3. Extend Weekly Workflow
+```bash
+# Open existing workflow
+n8n → "Fashion Insights - last version update 3"
+
+# Add new nodes following guide
+docs/DEVI-WEEKLY-AUTOMATION-GUIDE.md
+
+# Test manually first
+Click "Execute Workflow"
+
+# Enable automation
+Set schedule: Every Monday 9 AM
+```
+
+### Key Features
+
+**Self-Awareness:**
+Devi reads her own past content from GitHub each week, creating natural continuity:
+> "Last week I showed you oversized blazers, this week let's talk about how to style them..."
+
+**Multi-Format Content:**
+One workflow generates 7 content types:
+- Weekly newsletter (HTML)
+- Blog post (HTML)
+- Instagram script → Voice → Video
+- TikTok script
+- 23 Q&A pairs for chatbot
+- File tracker log (Google Sheets)
+
+**Visual Identity Consistency:**
+Devi's face, voice, and avatar created once, reused every week via identity assets in GitHub.
+
+**Cost-Effective:**
+- ~$13.50/week = ~$702/year
+- Scales to unlimited viewers
+- No per-interaction costs (vs ChatGPT plugins)
+
+### Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [DEVI-AUTOMATION-RUNBOOK.md](docs/DEVI-AUTOMATION-RUNBOOK.md) | **Start here** - Quick reference & troubleshooting |
+| [DEVI-WEEKLY-AUTOMATION-GUIDE.md](docs/DEVI-WEEKLY-AUTOMATION-GUIDE.md) | Node-by-node setup instructions |
+| [DEVI-API-INTEGRATIONS.md](docs/DEVI-API-INTEGRATIONS.md) | How to get all API credentials |
+| [DEVI-90DAY-EXPERIMENT.md](docs/DEVI-90DAY-EXPERIMENT.md) | 12-week testing plan & metrics |
+| [DEVI-PERSONA.md](DEVI-PERSONA.md) | Devi's voice, tone, personality |
+| [DEVI-FULL-AUTOMATION-PLAN.md](DEVI-FULL-AUTOMATION-PLAN.md) | Original complete plan |
+
+### Current Status
+
+- ✅ Content generation working (OpenAI)
+- ✅ GitHub storage working
+- ✅ Q&A generation working (23 pairs)
+- ✅ Lovable chatbot fetching Q&A
+- ✅ File Tracker logging working
+- ✅ Identity assets created
+- 🔨 Voice/video automation (in progress)
+- 🔨 Social auto-posting (in progress)
+- 📅 90-day experiment starts Week 1
+
+### Example Output
+
+**Week 1 Q&A Sample:**
+```json
+{
+  "question": "What's trending this week?",
+  "answer": "Hey loves! This week everyone's wearing oversized blazers and metallic boots. I've seen these on EVERY top influencer 💜",
+  "keywords": ["trending", "trends", "hot", "popular"]
+}
+```
+
+**Instagram Script Sample:**
+> "Hey loves! Week 1 fashion insights are here! This week's vibe? Oversized blazers paired with metallic boots - I'm OBSESSED. Swipe for where to get them! Link in bio for the full breakdown 💜"
+
+### Workflow Architecture
+
+```
+Monday 9 AM Trigger
+  ↓
+Get Current Week (File Tracker)
+  ↓
+Read Own Past Content (GitHub self-awareness)
+  ↓
+Scrape Fresh Trends (Bright Data)
+  ↓
+Build Master Context (past + fresh)
+  ↓
+Generate Content (OpenAI GPT-4o-mini)
+  ↓
+[5 parallel branches]
+  ├─→ Save Q&A → Lovable chatbot fetches
+  ├─→ Save Blog → Publish WordPress
+  ├─→ Save Instagram → Voice → Video → Post Instagram
+  ├─→ Save TikTok → Post TikTok
+  └─→ Log File Tracker → Google Sheets
+```
+
+### Support
+
+For Devi-specific questions:
+- See: `docs/DEVI-AUTOMATION-RUNBOOK.md` (troubleshooting)
+- Check: Workflow execution logs in n8n
+- Review: API service dashboards (OpenAI, ElevenLabs, HeyGen)
+
+For n8n platform questions:
+- [n8n Community Forum](https://community.n8n.io)
+- [n8n Documentation](https://docs.n8n.io)
+
+---
+
+**Built with n8n + AI | @devine.me | 90-day experiment starting 2025 💜**
+
 - **Source Available**: Always visible source code
 - **Self-Hostable**: Deploy anywhere
 - **Extensible**: Add your own nodes and functionality
