@@ -600,11 +600,12 @@
       "main": [[
         {"node": "Devi Blog Post Generator", "type": "main", "index": 0},
         {"node": "Devi Instagram Script Generator", "type": "main", "index": 0},
-        {"node": "Devi TikTok Script Generator", "type": "main", "index": 0}
+        {"node": "Devi TikTok Script Generator", "type": "main", "index": 0},
+        {"node": "Devi Affiliate Link Processor", "type": "main", "index": 0}
       ]]
     },
     "Devi Blog Post Generator": {
-      "main": [[{"node": "💾 Save Blog to GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
     },
     "Devi Instagram Script Generator": {
       "main": [[{"node": "Format Instagram for Save", "type": "main", "index": 0}]]
@@ -613,10 +614,17 @@
       "main": [[{"node": "Format TikTok for Save", "type": "main", "index": 0}]]
     },
     "Format Instagram for Save": {
-      "main": [[{"node": "💾 Save Instagram to GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
     },
     "Format TikTok for Save": {
-      "main": [[{"node": "💾 Save TikTok to GitHub", "type": "main", "index": 0}]]
+      "main": [[{"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}]]
+    },
+    "Devi Affiliate Link Processor": {
+      "main": [[
+        {"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0},
+        {"node": "📊 Prepare Analytics for Google Sheets", "type": "main", "index": 0},
+        {"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0}
+      ]]
     },
     "💾 Prepare Content for GitHub": {
       "main": [[
@@ -636,13 +644,6 @@
     },
     "📊 Log Files to Google Sheets": {
       "main": [[{"node": "📊 Google Sheets - Log File Tracker", "type": "main", "index": 0}]]
-    },
-    "Devi Affiliate Link Processor": {
-      "main": [[
-        {"node": "📊 Prepare Analytics for Google Sheets", "type": "main", "index": 0},
-        {"node": "Get Subscribers from Google Sheets", "type": "main", "index": 0},
-        {"node": "💾 Prepare Content for GitHub", "type": "main", "index": 0}
-      ]]
     },
     "📊 Prepare Analytics for Google Sheets": {
       "main": [[{"node": "📊 Google Sheets - Log Overview", "type": "main", "index": 0}]]
